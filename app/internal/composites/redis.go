@@ -1,0 +1,28 @@
+package composites
+
+import (
+	"balance-service/app/internal/config"
+	"balance-service/app/pkg/client/redis"
+	"context"
+	"fmt"
+	rdb "github.com/go-redis/redis"
+)
+
+type RedisComposite struct {
+	hashMap string
+	client  *rdb.Client
+}
+
+func NewRedisComposite(ctx context.Context, cfg config.Redis) (RedisComposite, error) {
+	var composite = RedisComposite{
+		hashMap: cfg.HashMap,
+	}
+
+	client, err := redis.New(ctx, cfg.Address, cfg.Pass, cfg.DB)
+	if err != nil {
+		return composite, fmt.Errorf("create client: %w", err)
+	}
+
+	composite.client = client
+	return composite, nil
+}
