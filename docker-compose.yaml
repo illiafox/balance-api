@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  pg:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: balance_api
+
+    restart: on-failure
+
+    networks:
+      local:
+        aliases:
+          - postgres
+
+
+    healthcheck:
+      test: pg_isready -U postgres -d balance_api
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate
+
+    restart: on-failure
+
+    depends_on:
+      pg:
+        condition: service_healthy
+
+    volumes:
+      - ./migrate:/migrations
+
+    networks:
+      - local
+
+    command:
+      [ "-database",  "postgres://postgres:postgres@postgres:5432/balance_api?sslmode=disable" , "-path", "/migrations", "up" ]
+
+  redis:
+    restart: on-failure
+
+    image: "redis:latest"
+
+    command: redis-server --port 6380
+
+    ports:
+      - "6380:6380"
+
+    environment:
+      REDIS_REPLICATION_MODE: master
+
+    networks:
+      - local
+
+  app:
+    depends_on:
+      - migrate
+      - redis
+
+    build: .
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      - POSTGRES_IP=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=balance_api
+
+      - REDIS_ADDRESS=redis:6380
+      - REDIS_PASS=
+      - REDIS_DB=0
+
+    networks:
+      - local
+
+    restart: on-failure
+
+networks:
+  local:
+    driver: bridge

@@ -40,6 +40,7 @@ func (s *balanceStorage) GetTransactions(
 	// get balance id
 	err = c.QueryRow(ctx, "SELECT balance_id FROM balances WHERE user_id = $1", userID).Scan(&balanceID)
 	if err != nil {
+		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> balance not found
 			return nil, fmt.Errorf("balance with user id %d not found", userID)
 		}
@@ -47,10 +48,11 @@ func (s *balanceStorage) GetTransactions(
 	}
 
 	// get transactions
-	rows, err := c.Query(ctx, "SELECT * FROM transactions WHERE balance_id = $1 ORDER BY "+order+" LIMIT $2 OFFSET $3",
+	rows, err := c.Query(ctx, "SELECT * FROM transactions WHERE to_id = $1 OR from_id = $1 ORDER BY "+order+" LIMIT $2 OFFSET $3",
 		balanceID, limit, offset)
 	//
-	if err == nil {
+	if err != nil {
+		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> no transactions
 			return []entity.Transaction{}, nil
 		}
@@ -59,10 +61,8 @@ func (s *balanceStorage) GetTransactions(
 	}
 	defer rows.Close()
 
-	fmt.Println(rows.CommandTag().RowsAffected()) // TODO: remove
-
 	var (
-		trs  = make([]entity.Transaction, 0, rows.CommandTag().RowsAffected())
+		trs  = make([]entity.Transaction, 0, 1)
 		t    entity.Transaction
 		from types.NullInt64
 	)

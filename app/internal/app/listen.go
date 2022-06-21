@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,36 +13,27 @@ import (
 	"go.uber.org/zap"
 )
 
-type Rust struct {
-	G
-}
-
 func (app *App) Listen() {
-	defer func() {
-		if !app.flags.cache {
-			err := app.closers.db()
+	handler, err := app.Handler()
+	if err != nil {
+		app.logger.Error("create handler", zap.Error(err))
 
-			if err != nil {
-				app.logger.Error("close database", zap.Error(err))
-			}
-		}
+		app.closers.Close()
+		os.Exit(1)
+	}
 
-		err := app.closers.logger()
-		if err != nil {
-			log.Fatalf("close logger: %v", err)
-		}
-	}()
-
-	// //
+	//
+	defer app.closers.Close()
+	//
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%s:%d", app.cfg.Host.Addr, app.cfg.Host.Port),
 		//
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
+		WriteTimeout: time.Second * 3,
+		ReadTimeout:  time.Second * 3,
+		IdleTimeout:  time.Second * 15,
 		//
-		Handler: app.Handler(),
+		Handler: handler,
 	}
 
 	quit := make(chan os.Signal, 1)
@@ -52,7 +42,7 @@ func (app *App) Listen() {
 	go func() {
 		var err error
 
-		app.logger.Info("Server started", zap.String("addr", srv.Addr))
+		app.logger.Info("Server started", zap.String("address", srv.Addr), zap.Bool("https", app.flags.https))
 
 		switch {
 		case app.flags.https:
@@ -69,7 +59,7 @@ func (app *App) Listen() {
 	}()
 
 	<-quit
-	os.Stdout.WriteString("\n")
+	_, _ = os.Stdout.WriteString("\n")
 
 	app.logger.Info("Shutting down server")
 

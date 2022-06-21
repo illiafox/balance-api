@@ -11,29 +11,29 @@ import (
 	"go.uber.org/zap"
 )
 
-// GetBalance
-// @Summary      Get user balance
-// @Description  Get balance by user ID
+// ChangeBalance
+// @Summary      Change user balance
+// @Description  Change balance by user ID
 // @Tags         balance
 // @Accept       json
 // @Produce      json
-// @Param        input body 	dto.GetBalanceIN false "User id and Currency"
-// @Success      200  {object}  dto.GetBalanceOUT{balance=integer} "Balance data"
+// @Param        input body 	dto.ChangeBalanceIN false "User id, change amount and description"
+// @Success      200  {object}  dto.ChangeBalanceOUT
 // @Failure      400  {object}  dto.Error
 // @Failure      406  {object}  dto.Error
 // @Failure      500  {object}  dto.Error
-// @Router       /get [get]
-func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request) {
-	var get dto.GetBalanceIN
+// @Router       /change [post]
+func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
+	var change dto.ChangeBalanceIN
 	// decode body
 	defer r.Body.Close() // ignore error
-	if err := json.NewDecoder(r.Body).Decode(&get); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&change); err != nil {
 		dto.JSONError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
 
 		return
 	}
-	// validate
-	if err := get.Validate(); err != nil {
+	// validate struct
+	if err := change.Validate(); err != nil {
 		dto.JSONError(w, http.StatusBadRequest, err)
 
 		return
@@ -42,13 +42,11 @@ func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.timeout)
 	defer cancel()
 	// call service
-	balance, err := h.balanceService.Get(ctx, get.UserID, get.Base)
+	err := h.balanceService.Change(ctx, change.UserID, change.Amount, change.Description)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
-			h.logger.Error("/get: get balance", zap.Error(err), zap.Int64("user_id", get.UserID), zap.String("base", get.Base))
+			h.logger.Error("/change: change balance", zap.Error(err), zap.Int64("user_id", change.UserID), zap.Int64("amount", change.Amount))
 			dto.JSONError(w, http.StatusInternalServerError, internal)
-
-			return
 		} else {
 			dto.JSONError(w, http.StatusNotAcceptable, err)
 		}
@@ -56,13 +54,9 @@ func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// encode response
-	err = dto.JSONResponse(w, dto.GetBalanceOUT{
-		Status:  dto.Status{Ok: true},
-		Base:    get.Base,
-		Balance: []byte(balance),
-	})
+	err = dto.JSONResponse(w, dto.ChangeBalanceOUT{Ok: true})
 	//
 	if err != nil {
-		h.logger.Error("/get: encode response", zap.Error(err), zap.String("balance", balance))
+		h.logger.Error("/change: encode response", zap.Error(err))
 	}
 }
