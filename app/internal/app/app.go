@@ -2,18 +2,17 @@ package app
 
 import (
 	"balance-service/app/internal/config"
-	"go.uber.org/zap"
+	"balance-service/app/pkg/closer"
+	"balance-service/app/pkg/logger"
 )
 
 type App struct {
 	flags flags
 	//
-	logger *zap.Logger
+	logger logger.Logger
 	cfg    config.Config
 	//
-	closers struct {
-		logger, db func() error
-	}
+	closers closer.Closers
 }
 
 func (app *App) Run() {

@@ -186,13 +186,19 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	}
 
 	// create record
-	_, err = tx.Exec(ctx, `INSERT INTO transactions (from_id,to_id,action,description) VALUES ($1,$2,$3)`,
+	_, err = tx.Exec(ctx, `INSERT INTO transactions (from_id,to_id,action,description) VALUES ($1,$2,$3,$4)`,
 		senderID, receiverID, amount, desc)
 	//
 	if err != nil {
 		return errors.NewInternal(err, "exec: create record")
 	}
 
+	// commit transaction
+	err = tx.Commit(ctx)
+	if err != nil {
+		return errors.NewInternal(err, "commit transaction")
+	}
+	//
 	return nil
 }
 
@@ -244,5 +250,11 @@ func (s balanceStorage) ChangeOwner(ctx context.Context, oldUserID int64, newUse
 		return errors.NewInternal(err, "exec: update owner")
 	}
 
+	// commit transaction
+	err = tx.Commit(ctx)
+	if err != nil {
+		return errors.NewInternal(err, "commit transaction")
+	}
+	//
 	return nil
 }

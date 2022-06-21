@@ -15,7 +15,18 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 	fileEncoder := zapcore.NewJSONEncoder(pe)
 	// console
 	pe.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05") // "02/01/2006 15:04:05 |"
-	pe.EncodeLevel = levelEncoder
+	// level encoder
+	pe.EncodeLevel = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString("|")
+		enc.AppendString(l.CapitalString())
+		enc.AppendString("|")
+	}
+	// name encoder
+	pe.EncodeName = func(n string, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(n)
+		enc.AppendString("|")
+	}
+	//
 	pe.ConsoleSeparator = " "
 	consoleEncoder := zapcore.NewConsoleEncoder(pe)
 	// //
@@ -39,10 +50,4 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 	return zap.New(
 		zapcore.NewTee(cores...),
 	)
-}
-
-func levelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString("|")
-	enc.AppendString(l.CapitalString())
-	enc.AppendString("|")
 }

@@ -7,6 +7,9 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// stores 100
+var divisor = decimal.NewFromInt(100)
+
 func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (string, error) {
 	// GetBalance Balance
 	balance, err := s.balance.GetBalance(ctx, userID)
@@ -18,7 +21,7 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 		return "", errors.Wrap(err, "get balance")
 	}
 
-	money := decimal.New(balance, 1)
+	money := decimal.NewFromInt(balance).Div(divisor)
 
 	// GetBalance exchange rate
 	if abbr != "" {
@@ -31,9 +34,7 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 			return "", errors.Wrap(err, "get currency")
 		}
 
-		money = money.Div(
-			decimal.New(100, 1),
-		).Mul(c)
+		money = money.Div(c)
 	}
 
 	// format 100 -> '1.00'
@@ -43,8 +44,8 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 func (s *balanceService) Change(ctx context.Context, userID, amount int64, desc string) error {
 	return s.balance.ChangeBalance(ctx, userID, amount, desc)
 }
-func (s *balanceService) Transfer(ctx context.Context, oldUserID, newUserID, amount int64, desc string) error {
-	return s.balance.Transfer(ctx, oldUserID, newUserID, amount, desc)
+func (s *balanceService) Transfer(ctx context.Context, fromID, toID, amount int64, desc string) error {
+	return s.balance.Transfer(ctx, fromID, toID, amount, desc)
 }
 func (s *balanceService) ChangeOwner(ctx context.Context, oldUserID int64, newUserID int64) error {
 	return s.balance.ChangeOwner(ctx, oldUserID, newUserID)

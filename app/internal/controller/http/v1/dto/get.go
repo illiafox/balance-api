@@ -1,18 +1,24 @@
 package dto
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-type Status struct {
-	Ok bool `json:"ok"`
-}
-
-type GetBalanceIn struct {
+type GetBalanceIN struct {
 	UserID int64  `json:"user_id"`
 	Base   string `json:"base"`
 }
 
-type GetBalanceOut struct {
+func (g GetBalanceIN) Validate() error {
+	if g.UserID <= 0 {
+		return fmt.Errorf("invalid user id: got %d, expected > 0", g.UserID)
+	}
+	return nil
+}
+
+type GetBalanceOUT struct {
 	Status
 	Balance json.RawMessage `json:"balance"`
-	Base    string          `json:"base"`
+	Base    string          `json:"base,omitempty"`
 }

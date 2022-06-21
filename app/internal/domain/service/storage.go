@@ -9,12 +9,14 @@ import (
 
 type BalanceStorage interface {
 	// Balance
+
 	GetBalance(ctx context.Context, userID int64) (balance int64, err error)
 	ChangeBalance(ctx context.Context, userID, amount int64, desc string) error
 
 	Transfer(ctx context.Context, fromUserID, towUserID, amount int64, desc string) error
 
 	// Transaction
+
 	GetTransactions(
 		ctx context.Context,
 		userID, limit, offset int64,
@@ -22,6 +24,7 @@ type BalanceStorage interface {
 	) ([]entity.Transaction, error)
 
 	// Owner
+
 	ChangeOwner(ctx context.Context, oldUserID, newUserID int64) error
 }
 
