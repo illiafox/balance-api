@@ -1,0 +1,8 @@
+.idea
+
+# config files (except for the default one)
+app/cmd/api/log.txt
+app/cmd/api/*.toml
+
+# log files
+!app/cmd/api/config.toml

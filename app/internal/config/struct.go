@@ -14,7 +14,6 @@ type Postgres struct {
 	Database string `env:"POSTGRES_DB"       env-required:""`
 	IP       string `env:"POSTGRES_IP"       env-required:""`
 	Port     int    `env:"POSTGRES_PORT"     env-default:"5432"`
-	Protocol string `env:"POSTGRES_PROTOCOL" env-default:"tcp"`
 }
 
 // Host

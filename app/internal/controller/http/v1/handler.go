@@ -6,18 +6,19 @@ import (
 
 	"balance-service/app/internal/adapters/api"
 	"balance-service/app/internal/adapters/api/balance"
-	"go.uber.org/zap"
+	"balance-service/app/pkg/logger"
+	"github.com/julienschmidt/httprouter"
 )
 
 type handler struct {
 	balanceService balance.Service
 	//
-	logger *zap.Logger
+	logger logger.Logger
 	//
 	timeout time.Duration
 }
 
-func NewHandler(logger *zap.Logger, balanceService balance.Service) api.Handler {
+func NewHandler(logger logger.Logger, balanceService balance.Service) api.Handler {
 	return &handler{
 		balanceService: balanceService,
 		//
@@ -27,6 +28,19 @@ func NewHandler(logger *zap.Logger, balanceService balance.Service) api.Handler 
 	}
 }
 
-func (h *handler) Register(router *http.ServeMux) {
+func (h *handler) Register() http.Handler {
+	router := httprouter.New()
 
+	router.GET("/get", wrap(h.GetBalance))
+	router.POST("/change", wrap(h.ChangeBalance))
+	router.PUT("/transfer", wrap(h.TransferBalance))
+	router.GET("/view", wrap(h.ViewTransactions))
+
+	return router
+}
+
+func wrap(f http.HandlerFunc) httprouter.Handle {
+	return func(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
+		f(writer, request)
+	}
 }

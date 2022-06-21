@@ -21,7 +21,7 @@ func (pg PgComposite) Close() error {
 func NewPgComposite(ctx context.Context, cfg config.Postgres) (PgComposite, error) {
 	var composite PgComposite
 
-	pool, err := pg.NewPool(ctx, cfg.User, cfg.Pass, cfg.Database, cfg.IP, cfg.Port, cfg.Protocol)
+	pool, err := pg.NewPool(ctx, cfg.User, cfg.Pass, cfg.Database, cfg.IP, cfg.Port)
 	if err != nil {
 		return composite, fmt.Errorf("create pool: %w", err)
 	}

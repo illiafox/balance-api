@@ -5,28 +5,30 @@ import (
 	"log"
 	"runtime"
 
+	"balance-service/app/pkg/closer"
 	logs "balance-service/app/pkg/logger"
 )
 
 type flags struct {
 	config string
 	https  bool
+	noswag bool
 }
 
-func Init() App {
+func Init() *App {
 
 	var (
-		logPath = flag.String("log", "log.txt", "log file path (default 'log.txt')")
-		config  = flag.String("config", "config.toml", "config path (default 'config.toml')")
-		//cache   = flag.Bool("cache", false, "use built-it storage")
-		//debug   = flag.Bool("debug", false, "enable debug mode")
-		https = flag.Bool("https", false, "run server in https mode")
+		logPath = flag.String("log", "log.txt", "log file path")
+		config  = flag.String("config", "config.toml", "config path")
+		//
+		https  = flag.Bool("https", false, "run server in https mode")
+		noswag = flag.Bool("noswag", false, "disable swagger")
 	)
 
 	flag.Parse()
 
 	// // logger
-	logger, closer, err := logs.New(*logPath)
+	logger, err := logs.New(*logPath)
 	if err != nil {
 		log.Fatalf("init logger: %v", err)
 	}
@@ -35,15 +37,17 @@ func Init() App {
 
 	app := App{
 		flags: flags{
-			//cache:  *cache,
 			config: *config,
-			//debug:  *debug,
-			https: *https,
+			https:  *https,
+			noswag: *noswag,
 		},
-
-		logger: logger,
+		//
+		logger: logger.Logger,
+		//
+		closers: closer.New(logger.Logger),
 	}
-	app.closers.logger = closer
-
-	return app
+	// add logger close
+	app.closers.Add(logger)
+	//
+	return &app
 }

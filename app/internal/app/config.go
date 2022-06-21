@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"os"
 
 	"balance-service/app/internal/config"
@@ -18,10 +17,7 @@ func (app *App) ReadConfig() {
 		)
 
 		// close logger
-		err = app.closers.logger()
-		if err != nil {
-			log.Fatalf("close logger: %v", err)
-		}
+		app.closers.Close()
 
 		os.Exit(1)
 	}

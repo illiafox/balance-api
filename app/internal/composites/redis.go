@@ -1,16 +1,21 @@
 package composites
 
 import (
-	"balance-service/app/internal/config"
-	"balance-service/app/pkg/client/redis"
 	"context"
 	"fmt"
+
+	"balance-service/app/internal/config"
+	"balance-service/app/pkg/client/redis"
 	rdb "github.com/go-redis/redis"
 )
 
 type RedisComposite struct {
 	hashMap string
 	client  *rdb.Client
+}
+
+func (r RedisComposite) Close() error {
+	return r.client.Close()
 }
 
 func NewRedisComposite(ctx context.Context, cfg config.Redis) (RedisComposite, error) {
