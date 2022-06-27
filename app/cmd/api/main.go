@@ -21,6 +21,15 @@ import (
 // @schemes http https
 
 func main() {
+	var a, b chan string
+
+	select {
+	case <-a:
+	case b <- "го лучше":
+	default:
+
+	}
+
 	app := apps.New()
 	app.Run()
 }

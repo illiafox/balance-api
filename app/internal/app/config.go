@@ -9,12 +9,9 @@ import (
 
 func (app *App) ReadConfig() {
 	// // config
-	cfg, err := config.New(app.flags.config)
+	cfg, err := config.New()
 	if err != nil {
-		app.logger.Error("read config",
-			zap.String("path", app.flags.config),
-			zap.Error(err),
-		)
+		app.logger.Error("read config", zap.Error(err))
 
 		// close logger
 		app.closers.Close()

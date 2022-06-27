@@ -10,16 +10,13 @@ import (
 )
 
 type flags struct {
-	config string
-	https  bool
-	noswag bool
+	https, noswag bool
 }
 
 func New() *App {
 
 	var (
 		logPath = flag.String("log", "log.txt", "log file path")
-		config  = flag.String("config", "config.toml", "config path")
 		//
 		https  = flag.Bool("https", false, "run server in https mode")
 		noswag = flag.Bool("noswag", false, "disable swagger")
@@ -37,7 +34,6 @@ func New() *App {
 
 	app := App{
 		flags: flags{
-			config: *config,
 			https:  *https,
 			noswag: *noswag,
 		},
