@@ -11,6 +11,9 @@ services:
 
     restart: on-failure
 
+    ports:
+      - "5430:5432"
+
     networks:
       local:
         aliases:
@@ -21,7 +24,7 @@ services:
       test: pg_isready -U postgres -d balance_api
       interval: 1s
       timeout: 3s
-      retries: 5
+      retries: 15
 
   migrate:
     image: migrate/migrate
@@ -35,6 +38,7 @@ services:
     volumes:
       - ./migrate:/migrations
 
+
     networks:
       - local
 
@@ -46,10 +50,10 @@ services:
 
     image: "redis:latest"
 
-    command: redis-server --port 6380
+    command: redis-server --port 6379
 
     ports:
-      - "6380:6380"
+      - "6380:6379"
 
     environment:
       REDIS_REPLICATION_MODE: master
@@ -74,7 +78,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=balance_api
 
-      - REDIS_ADDRESS=redis:6380
+      - REDIS_ADDRESS=redis:6379
       - REDIS_PASS=
       - REDIS_DB=0
 

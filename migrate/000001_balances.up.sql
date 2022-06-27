@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS balances
 (
-    balance_id BIGINT UNIQUE GENERATED ALWAYS AS IDENTITY,
-    user_id    BIGINT UNIQUE       NOT NULL,
-    balance    INTEGER DEFAULT '0' NOT NULL
+    user_id BIGINT UNIQUE NOT NULL,
+    CONSTRAINT user_id UNIQUE(user_id),
+
+    balance INTEGER DEFAULT '0' NOT NULL
 );

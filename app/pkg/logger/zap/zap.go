@@ -1,33 +1,37 @@
 package zap
 
 import (
-	"io"
-	"time"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"io"
+	"time"
 )
 
 func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 	pe := zap.NewProductionEncoderConfig()
+
 	// file
 	pe.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC1123)
 	fileEncoder := zapcore.NewJSONEncoder(pe)
+
 	// console
-	pe.EncodeTime = zapcore.TimeEncoderOfLayout("15:04:05") // "02/01/2006 15:04:05 |"
-	// level encoder
+	pe.EncodeCaller = func(caller zapcore.EntryCaller, encoder zapcore.PrimitiveArrayEncoder) {
+		encoder.AppendString(caller.TrimmedPath())
+		encoder.AppendString("|")
+	}
+
+	pe.EncodeTime = zapcore.TimeEncoderOfLayout("02/01 15:04:05") // "02/01/2006 15:04:05 |"
+	pe.ConsoleSeparator = " "
+	pe.EncodeName = func(n string, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(n)
+		enc.AppendString("|")
+	}
 	pe.EncodeLevel = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString("|")
 		enc.AppendString(l.CapitalString())
 		enc.AppendString("|")
 	}
-	// name encoder
-	pe.EncodeName = func(n string, enc zapcore.PrimitiveArrayEncoder) {
-		enc.AppendString(n)
-		enc.AppendString("|")
-	}
 	//
-	pe.ConsoleSeparator = " "
 	consoleEncoder := zapcore.NewConsoleEncoder(pe)
 	// //
 	cores := make([]zapcore.Core, len(files)+1)
@@ -49,5 +53,6 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 	//
 	return zap.New(
 		zapcore.NewTee(cores...),
+		zap.AddCaller(),
 	)
 }

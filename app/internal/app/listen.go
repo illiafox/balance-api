@@ -21,10 +21,9 @@ func (app *App) Listen() {
 		app.closers.Close()
 		os.Exit(1)
 	}
-
-	//
 	defer app.closers.Close()
-	//
+
+	// //
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%s:%d", app.cfg.Host.Addr, app.cfg.Host.Port),
@@ -36,14 +35,18 @@ func (app *App) Listen() {
 		Handler: handler,
 	}
 
+	// //
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	// //
 
 	go func() {
+		app.logger.Info("Server started",
+			zap.String("address", srv.Addr),
+			zap.Bool("https", app.flags.https),
+		)
+
 		var err error
-
-		app.logger.Info("Server started", zap.String("address", srv.Addr), zap.Bool("https", app.flags.https))
-
 		switch {
 		case app.flags.https:
 			err = srv.ListenAndServeTLS(app.cfg.Host.Cert, app.cfg.Host.Key)
@@ -58,15 +61,18 @@ func (app *App) Listen() {
 		quit <- nil
 	}()
 
-	<-quit
+	// //
+
+	<-quit // wait for signal or nil
 	_, _ = os.Stdout.WriteString("\n")
 
-	app.logger.Info("Shutting down server")
+	// //
 
+	app.logger.Info("Shutting down server")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		app.logger.Error("shutdown server", zap.Error(err))
+	if err = srv.Shutdown(ctx); err != nil {
+		app.logger.Error("shutdown", zap.Error(err))
 	}
 }
