@@ -31,10 +31,11 @@ func NewHandler(logger logger.Logger, balanceService balance.Service) api.Handle
 func (h *handler) Register() http.Handler {
 	router := httprouter.New()
 
-	router.GET("/get", wrap(h.GetBalance))
+	router.GET("/user/:id", h.GetBalance)
+	router.GET("/user/:id/transactions", h.ViewTransactions)
+	//
 	router.POST("/change", wrap(h.ChangeBalance))
 	router.PUT("/transfer", wrap(h.TransferBalance))
-	router.GET("/view", wrap(h.ViewTransactions))
 
 	return router
 }

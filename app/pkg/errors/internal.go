@@ -1,6 +1,8 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type InternalError struct {
 	Err   error
@@ -9,6 +11,14 @@ type InternalError struct {
 
 func (i InternalError) Error() string {
 	return fmt.Sprintf("%s: %s", i.Scope, i.Err)
+}
+
+func (i InternalError) Unwrap() error {
+	return i.Err
+}
+
+func (i InternalError) Cause() error {
+	return i.Err
 }
 
 func ToInternal(err error) (internal InternalError, ok bool) {

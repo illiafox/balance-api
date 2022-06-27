@@ -16,10 +16,11 @@ import (
 // @license.name Boost Software License 1.0
 // @license.url https://opensource.org/licenses/BSL-1.0
 
-// @host 0.0.0.0:8080/
-// @BasePath api/v1
+// @host 0.0.0.0:8080
+// @BasePath /api/v1
+// @schemes http https
 
 func main() {
-	app := apps.Init()
+	app := apps.New()
 	app.Run()
 }

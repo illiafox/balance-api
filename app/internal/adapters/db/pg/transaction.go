@@ -36,21 +36,10 @@ func (s *balanceStorage) GetTransactions(
 	}
 	defer c.Release()
 
-	var balanceID int64
-	// get balance id
-	err = c.QueryRow(ctx, "SELECT balance_id FROM balances WHERE user_id = $1", userID).Scan(&balanceID)
-	if err != nil {
-		//nolint:errorlint
-		if err == pgx.ErrNoRows { // no rows -> balance not found
-			return nil, fmt.Errorf("balance with user id %d not found", userID)
-		}
-		return nil, errors.NewInternal(err, "query: get balance")
-	}
-
 	// get transactions
-	rows, err := c.Query(ctx, "SELECT * FROM transactions WHERE to_id = $1 OR from_id = $1 ORDER BY "+order+" LIMIT $2 OFFSET $3",
-		balanceID, limit, offset)
-	//
+	rows, err := c.Query(ctx, "SELECT * FROM transactions WHERE to_id = $1 OR from_id = $1 ORDER BY $2 LIMIT $3 OFFSET $4",
+		userID, order, limit, offset)
+
 	if err != nil {
 		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> no transactions

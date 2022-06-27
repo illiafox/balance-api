@@ -19,8 +19,8 @@ clean:
 	if [ -f $(BUILD)/app ]; then rm $(BUILD)/app; fi
 
 
-.PHONY: compose-up
-compose-up: compose-down
+.PHONY: compose
+compose: compose-down
 	docker-compose up -d
 
 .PHONY: compose-down

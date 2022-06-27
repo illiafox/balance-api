@@ -13,7 +13,9 @@ func (s *balanceService) GetTransactions(
 	userID, limit, offset int64,
 	sort string,
 ) ([]entity.Transaction, error) {
-	var st = entity.DateDESC
+
+	var st = entity.DateDESC // default sort
+
 	// find sort type
 	if sort != "" {
 		var ok bool
@@ -22,7 +24,7 @@ func (s *balanceService) GetTransactions(
 			return nil, fmt.Errorf("sort type '%s' not found", sort)
 		}
 	}
-	//
+
 	trs, err := s.balance.GetTransactions(ctx, userID, limit, offset, st)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
@@ -31,6 +33,6 @@ func (s *balanceService) GetTransactions(
 
 		return nil, errors.Wrap(err, "get transactions")
 	}
-	//
+
 	return trs, nil
 }

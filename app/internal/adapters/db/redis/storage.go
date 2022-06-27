@@ -26,7 +26,7 @@ func (s *currencyStorage) Get(ctx context.Context, abbreviation string) (decimal
 			return decimal.Decimal{}, fmt.Errorf("currency %s not available", abbreviation)
 		}
 
-		return decimal.Decimal{}, errors.NewInternal(err, "hget")
+		return decimal.Decimal{}, errors.NewInternal(err, "hget (get data from map)")
 	}
 
 	return decimal.NewFromFloat32(c), nil
