@@ -71,6 +71,8 @@ services:
     ports:
       - "8080:8080"
 
+    env_file:
+      - .env
     environment:
       - POSTGRES_IP=postgres
       - POSTGRES_PORT=5432
@@ -82,6 +84,7 @@ services:
       - REDIS_PASS=
       - REDIS_DB=0
 
+      - HOST_PORT=8080
     networks:
       - local
 

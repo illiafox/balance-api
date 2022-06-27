@@ -1,3 +1,6 @@
+include .env
+export
+
 BUILD=./app/cmd/api
 
 .PHONY: all
@@ -21,7 +24,7 @@ clean:
 
 .PHONY: compose
 compose: compose-down
-	docker-compose up -d
+	docker-compose up -d --build
 
 .PHONY: compose-down
 compose-down:
