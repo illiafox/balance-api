@@ -23,7 +23,7 @@ docker-compose up # make compose
 ### App port `:8080`
 
 - ### Redis `:6380`
-  **Database** `0` **Password** ` `
+  **Database** `0`
 - ### PostgreSQL `:5430`
   **User** `postgres` **Password** `postgres` **Database** `balance_api`
 
@@ -64,16 +64,16 @@ docker-compose up # make compose
 
 #### 1. Clone repository 
     `git clone https://github.com/illiafox/balance-api`
-#### 2. Setup [config](app/cmd/api/config.toml)
+#### 2. Setup [env file](.env)
 #### 3. Build and Run
 ```shell
 make build
 make run # ./app
 ```
 
-### With non-standard config and log file paths:
+### With non-standard log file path:
 ```shell
-app -log=log.txt -config=config.toml
+app -log=log.txt
 ```
 
 ### HTTPS
@@ -86,12 +86,6 @@ app -https
 app -noswag
 ```
 
-### With reading from environment:
-Available keys can be found in the **[config tags](app/internal/config/struct.go)**
-```shell
-HOST_PORT=80 app
-```
-
 ## PostgreSQL Migrations
 ```shell
 migrate -database ${POSTGRESQL_URL} -path migrate/ up
@@ -102,11 +96,11 @@ migrate -database ${POSTGRESQL_URL} -path migrate/ up
 ```shell
 HSET currency EUR 65 
 ```
-Where `currency` is `Redis Hash` Name (`Redis.HashMap` in the [config](app/cmd/api/config.toml) file)
+Where `currency` is `Redis Hash` Name (`Redis.HashMap`)
 
 ---
 
-## `TODO` (contribution is welcome):
+## TODO (contribution is welcome):
 
 ### 1. Add gRPC support (`in progress`)
 ### 2. Make service for currency rates
