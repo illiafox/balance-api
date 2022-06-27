@@ -11,7 +11,6 @@ import (
 var divisor = decimal.NewFromInt(100)
 
 func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (string, error) {
-	// GetBalance Balance
 	balance, err := s.balance.GetBalance(ctx, userID)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
@@ -21,10 +20,12 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 		return "", errors.Wrap(err, "get balance")
 	}
 
+	// //
 	money := decimal.NewFromInt(balance).Div(divisor)
 
-	// GetBalance exchange rate
+	// exchange rate
 	if abbr != "" {
+		// get currency
 		c, err := s.currency.Get(ctx, abbr)
 		if err != nil {
 			if internal, ok := errors.ToInternal(err); ok {
@@ -46,7 +47,4 @@ func (s *balanceService) Change(ctx context.Context, userID, amount int64, desc 
 }
 func (s *balanceService) Transfer(ctx context.Context, fromID, toID, amount int64, desc string) error {
 	return s.balance.Transfer(ctx, fromID, toID, amount, desc)
-}
-func (s *balanceService) ChangeOwner(ctx context.Context, oldUserID int64, newUserID int64) error {
-	return s.balance.ChangeOwner(ctx, oldUserID, newUserID)
 }

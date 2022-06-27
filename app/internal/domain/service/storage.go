@@ -22,10 +22,6 @@ type BalanceStorage interface {
 		userID, limit, offset int64,
 		sort entity.Sort,
 	) ([]entity.Transaction, error)
-
-	// Owner
-
-	ChangeOwner(ctx context.Context, oldUserID, newUserID int64) error
 }
 
 type CurrencyStorage interface {

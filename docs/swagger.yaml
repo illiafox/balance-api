@@ -1,4 +1,4 @@
-basePath: api/v1
+basePath: /api/v1
 definitions:
   dto.ChangeBalanceIN:
     properties:
@@ -20,13 +20,6 @@ definitions:
         type: string
       ok:
         type: boolean
-    type: object
-  dto.GetBalanceIN:
-    properties:
-      base:
-        type: string
-      user_id:
-        type: integer
     type: object
   dto.GetBalanceOUT:
     properties:
@@ -55,19 +48,6 @@ definitions:
       ok:
         type: boolean
     type: object
-  dto.ViewTransactionsIN:
-    properties:
-      limit:
-        type: integer
-      offset:
-        type: integer
-      sort:
-        type: string
-      user_id:
-        type: integer
-    required:
-    - sort
-    type: object
   dto.ViewTransactionsOUT:
     properties:
       ok:
@@ -91,11 +71,12 @@ definitions:
           type: integer
         type: array
       to_id:
+        description: to_id
         type: integer
       transaction_id:
         type: integer
     type: object
-host: 0.0.0.0:8080/
+host: 0.0.0.0:8080
 info:
   contact:
     email: illiadimura@gmail.com
@@ -115,7 +96,7 @@ paths:
       - application/json
       description: Change balance by user ID
       parameters:
-      - description: User id, change amount and description
+      - description: User ID, Change amount and Description
         in: body
         name: input
         schema:
@@ -131,8 +112,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/dto.Error'
-        "406":
-          description: Not Acceptable
+        "422":
+          description: Unprocessable Entity
           schema:
             $ref: '#/definitions/dto.Error'
         "500":
@@ -142,17 +123,51 @@ paths:
       summary: Change user balance
       tags:
       - balance
-  /get:
-    get:
+  /transfer:
+    put:
       consumes:
       - application/json
-      description: Get balance by user ID
+      description: Transfer money from one balance to another
       parameters:
-      - description: User id and Currency
+      - description: To and From ID, Amount and Description
         in: body
         name: input
+        required: true
         schema:
-          $ref: '#/definitions/dto.GetBalanceIN'
+          $ref: '#/definitions/dto.TransferBalanceIN'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TransferBalanceOUT'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.Error'
+      summary: Transfer money between users
+      tags:
+      - balance
+  /user/{id}:
+    get:
+      description: Get balance by User ID
+      parameters:
+      - description: user id
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: currency abbreviation
+        in: query
+        minLength: 3
+        name: base
+        type: string
       produces:
       - application/json
       responses:
@@ -180,55 +195,59 @@ paths:
       summary: Get user balance
       tags:
       - balance
-  /transfer:
-    put:
-      consumes:
-      - application/json
-      description: Transfer money from one balance to another
-      parameters:
-      - description: to, from, amount and description
-        in: body
-        name: input
-        schema:
-          $ref: '#/definitions/dto.TransferBalanceIN'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.TransferBalanceOUT'
-        "406":
-          description: Not Acceptable
-          schema:
-            $ref: '#/definitions/dto.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.Error'
-      summary: Transfer money between users
-      tags:
-      - balance
-  /view:
+  /user/{id}/transactions:
     get:
-      consumes:
-      - application/json
       description: View transactions with sorting and pagination
       parameters:
-      - description: User id, limit, sorting and pagination
-        in: body
-        name: input
-        schema:
-          $ref: '#/definitions/dto.ViewTransactionsIN'
+      - description: user id
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - default: 100
+        description: output limit
+        in: query
+        maximum: 100
+        minimum: 0
+        name: limit
+        type: integer
+      - default: 0
+        description: output offset
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: sort type
+        enum:
+        - DATE_DESC
+        - DATE_ASC
+        - SUM_DESC
+        - SUM_ASC
+        in: query
+        name: sort
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Transactions data
           schema:
-            $ref: '#/definitions/dto.ViewTransactionsOUT'
-        "406":
-          description: Not Acceptable
+            allOf:
+            - $ref: '#/definitions/dto.ViewTransactionsOUT'
+            - properties:
+                transactions:
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/entity.Transaction'
+                    - properties:
+                        from_id:
+                          type: integer
+                      type: object
+                  type: array
+              type: object
+        "422":
+          description: Unprocessable Entity
           schema:
             $ref: '#/definitions/dto.Error'
         "500":
@@ -238,4 +257,7 @@ paths:
       summary: View user transactions
       tags:
       - transactions
+schemes:
+- http
+- https
 swagger: "2.0"

@@ -15,7 +15,7 @@ type flags struct {
 	noswag bool
 }
 
-func Init() *App {
+func New() *App {
 
 	var (
 		logPath = flag.String("log", "log.txt", "log file path")
@@ -46,8 +46,9 @@ func Init() *App {
 		//
 		closers: closer.New(logger.Logger),
 	}
+
 	// add logger close
 	app.closers.Add(logger)
-	//
+
 	return &app
 }
