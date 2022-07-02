@@ -1,5 +1,8 @@
 version: '3.8'
 
+volumes:
+  pgdata:
+
 services:
   pg:
     image: postgres:latest
@@ -9,7 +12,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: balance_api
 
+
     restart: on-failure
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
     ports:
       - "5430:5432"
@@ -85,6 +92,7 @@ services:
       - REDIS_DB=0
 
       - HOST_PORT=8080
+
     networks:
       - local
 

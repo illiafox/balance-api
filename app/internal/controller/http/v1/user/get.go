@@ -1,4 +1,4 @@
-package v1
+package user
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"balance-service/app/internal/controller/http/v1/dto"
+	"balance-service/app/internal/controller/http/v1/user/dto"
 	"balance-service/app/pkg/errors"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"

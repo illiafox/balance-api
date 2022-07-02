@@ -11,6 +11,18 @@
 
 ---
 
+## Features (contribution is welcome)
+
+- [x] Exchange rates
+- [x] Transfer money between users
+- [x] Block/Unblock balance
+- [x] Swagger
+- [ ] gRPC
+- [ ] Github Docs
+- [ ] Rewrite in Rust
+
+---
+
 ## docker-compose
 
 API **starts immediately** after containers are up
@@ -32,8 +44,9 @@ docker-compose up # make compose
 ## Docs
 
 ### 1. Swagger
+ [![](https://img.shields.io/badge/-Swagger%20Docs-informational?style=for-the-badge&logo=swagger&color=blue&labelColor=gray)](https://validator.swagger.io/?url=https://raw.githubusercontent.com/illiafox/balance-api/master/docs/swagger.yaml)
 
-![](docs/swagger.png)
+
 
 #### - Run application and open [`0.0.0.0:8080/swagger`](http://0.0.0.0:8080/swagger) page
 #### - Visit online [API documentation](https://validator.swagger.io/?url=https://raw.githubusercontent.com/illiafox/balance-api/master/docs/swagger.yaml)
@@ -100,7 +113,4 @@ Where `currency` is `Redis Hash` Name (`Redis.HashMap`)
 
 ---
 
-## TODO (contribution is welcome):
 
-### 1. Add gRPC support (`in progress`)
-### 2. Make service for currency rates

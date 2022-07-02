@@ -3,14 +3,16 @@ package pg
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"balance-service/app/internal/domain/entity"
 	"balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
 )
 
 func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance int64, err error) {
 	// pool.QueryRow() acquires and releases connection automatically
-	err = s.pool.QueryRow(ctx, "SELECT balance FROM balances WHERE user_id = $1", userID).Scan(&balance)
+	err = s.pool.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1", userID).Scan(&balance)
 	if err != nil {
 		if err == pgx.ErrNoRows { // no rows -> balance not found
 			return -1, fmt.Errorf("balance with user id %d not found", userID)
@@ -25,7 +27,7 @@ func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance i
 func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID int64) (balance int64, err error) {
 
 	// pool.QueryRow() acquires and releases connection automatically
-	err = tx.QueryRow(ctx, "SELECT balance FROM balances WHERE user_id = $1 FOR UPDATE", userID).
+	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE", userID).
 		Scan(&balance)
 	//
 	if err != nil {
@@ -40,7 +42,7 @@ func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID
 	return
 }
 
-func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount int64, desc string) error {
+func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount int64, desc string) (err error) {
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
@@ -55,7 +57,7 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 	}
 
 	defer func() { // defer rollback if error occurs
-		if r := tx.Rollback(ctx); r != nil && err == nil {
+		if r := tx.Rollback(ctx); r != pgx.ErrTxClosed && r != nil && err == nil {
 			err = fmt.Errorf("rollback: %w", r)
 		}
 	}()
@@ -63,7 +65,7 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 	var balance int64
 
 	// get balance
-	err = tx.QueryRow(ctx, "SELECT balance FROM balances WHERE user_id = $1 FOR UPDATE", userID).Scan(&balance)
+	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE", userID).Scan(&balance)
 
 	if err != nil {
 		//nolint:errorlint
@@ -72,15 +74,28 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 				return fmt.Errorf("balance with user id %d not found", userID)
 			}
 
-			// create new balance
-			_, err = tx.Exec(ctx, "INSERT INTO balances (user_id,balance) VALUES ($1,$2)", userID, amount)
-			if err != nil {
-				return errors.NewInternal(err, "exec: create new balance")
-			}
+			var (
+				reason string
+				date   time.Time
+			)
 
+			// // check if user is not blocked
+			err = tx.QueryRow(ctx, "SELECT reason, date FROM block WHERE user_id = $1", userID).Scan(&reason, &date)
+			if err == nil { // no error -> balance is blocked
+				return fmt.Errorf("balance is blocked with reason '%s' at %s", reason, date.Format(entity.TimeLayout))
+			} else if err != pgx.ErrNoRows { // internal
+				return errors.NewInternal(err, "query: check if user is not blocked")
+			}
 		} else { // internal error
 			return errors.NewInternal(err, "query: get balance for update")
 		}
+
+		// if not found -> create new balance
+		_, err = tx.Exec(ctx, "INSERT INTO balance (user_id,balance) VALUES ($1,$2)", userID, amount)
+		if err != nil {
+			return errors.NewInternal(err, "exec: create new balance")
+		}
+
 	} else { // if balance found
 		balance += amount
 		if balance < 0 { // check whether there is enough money to proceed change
@@ -88,14 +103,14 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 		}
 
 		// update existing balance
-		_, err = tx.Exec(ctx, "UPDATE balances SET balance = $1 WHERE user_id = $2", balance, userID)
+		_, err = tx.Exec(ctx, "UPDATE balance SET balance = $1 WHERE user_id = $2", balance, userID)
 		if err != nil {
 			return errors.NewInternal(err, "exec: update balance")
 		}
 	}
 
 	// create record
-	_, err = tx.Exec(ctx, `INSERT INTO transactions (to_id,action,description) VALUES ($1,$2,$3)`, userID, amount, desc)
+	_, err = tx.Exec(ctx, `INSERT INTO transaction (to_id,action,description) VALUES ($1,$2,$3)`, userID, amount, desc)
 	if err != nil {
 		return errors.NewInternal(err, "exec: create record")
 	}
@@ -106,10 +121,10 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 		return errors.NewInternal(err, "commit transaction")
 	}
 
-	return nil
+	return
 }
 
-func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) error {
+func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) (err error) {
 
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
@@ -125,7 +140,7 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	}
 
 	defer func() { // defer rollback if error occurs
-		if r := tx.Rollback(ctx); r != nil && err == nil {
+		if r := tx.Rollback(ctx); r != pgx.ErrTxClosed && r != nil && err == nil {
 			err = fmt.Errorf("rollback: %w", r)
 		}
 	}()
@@ -147,17 +162,30 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	//
 
 	// get receiver balance
-	err = tx.QueryRow(ctx, "SELECT balance FROM balances WHERE user_id = $1 FOR UPDATE", toUserID).
+	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE", toUserID).
 		Scan(&receiver)
 
 	if err != nil {
 		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> balance not found
-			// create new balance
-			_, err = tx.Exec(ctx,
-				"INSERT INTO balances (user_id,balance) VALUES ($1,$2)", toUserID, amount,
+
+			var (
+				reason string
+				date   time.Time
 			)
 
+			// // check if user is not blocked
+			err = tx.QueryRow(ctx, "SELECT reason, date FROM block WHERE user_id = $1", toUserID).Scan(&reason, &date)
+			if err == nil { // no error -> balance is blocked
+				return fmt.Errorf("receive balance is blocked with reason '%s' at %s", reason, date.Format(entity.TimeLayout))
+			} else if err != pgx.ErrNoRows { // internal
+				return errors.NewInternal(err, "query: check if user is not blocked")
+			}
+
+			// create new balance
+			_, err = tx.Exec(ctx,
+				"INSERT INTO balance (user_id,balance) VALUES ($1,$2)", toUserID, amount,
+			)
 			if err != nil {
 				return errors.NewInternal(err, "exec: create new balance")
 			}
@@ -167,20 +195,20 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	} else {
 		// update receiver balance
 		receiver += amount
-		_, err = tx.Exec(ctx, "UPDATE balances SET balance = $1 WHERE user_id = $2", receiver, toUserID)
+		_, err = tx.Exec(ctx, "UPDATE balance SET balance = $1 WHERE user_id = $2", receiver, toUserID)
 		if err != nil {
 			return errors.NewInternal(err, "exec: update receiver balance")
 		}
 	}
 
 	// update sender balance
-	_, err = tx.Exec(ctx, "UPDATE balances SET balance = $1 WHERE user_id = $2", sender, fromUserID)
+	_, err = tx.Exec(ctx, "UPDATE balance SET balance = $1 WHERE user_id = $2", sender, fromUserID)
 	if err != nil {
 		return errors.NewInternal(err, "exec: update sender balance")
 	}
 
 	// create record
-	_, err = tx.Exec(ctx, `INSERT INTO transactions (from_id,to_id,action,description) VALUES ($1,$2,$3,$4)`,
+	_, err = tx.Exec(ctx, `INSERT INTO transaction (from_id,to_id,action,description) VALUES ($1,$2,$3,$4)`,
 		fromUserID, toUserID, amount, desc)
 	if err != nil {
 		return errors.NewInternal(err, "exec: create record")
@@ -192,5 +220,5 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 		return errors.NewInternal(err, "commit transaction")
 	}
 
-	return nil
+	return
 }
