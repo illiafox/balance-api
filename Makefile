@@ -36,8 +36,8 @@ test:
 
 # swagger
 
-.PHONY: swag
-swag:
+.PHONY: swagger
+swagger:
 	 swag init --parseDependency --parseInternal \
 	 --parseDepth 1 --generatedTime=true -o=docs \
      -g=./app/cmd/api/main.go --outputTypes=yaml,go

@@ -1,4 +1,5 @@
 .idea
+.pgdata
 
 # config files (except for the default one)
 app/cmd/api/*.txt

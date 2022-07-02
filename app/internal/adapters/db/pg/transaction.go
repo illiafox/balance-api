@@ -37,7 +37,7 @@ func (s *balanceStorage) GetTransactions(
 	defer c.Release()
 
 	// get transactions
-	rows, err := c.Query(ctx, "SELECT * FROM transactions WHERE to_id = $1 OR from_id = $1 ORDER BY $2 LIMIT $3 OFFSET $4",
+	rows, err := c.Query(ctx, "SELECT * FROM transaction WHERE to_id = $1 OR from_id = $1 ORDER BY $2 LIMIT $3 OFFSET $4",
 		userID, order, limit, offset)
 
 	if err != nil {
@@ -52,23 +52,23 @@ func (s *balanceStorage) GetTransactions(
 
 	var (
 		trs  = make([]entity.Transaction, 0, 1)
-		t    entity.Transaction
+		tr   entity.Transaction
 		from types.NullInt64
 	)
 
 	for rows.Next() {
-		t.FromID = nil // set 'null'
+		tr.FromID = nil // set 'null'
 
-		if err = rows.Scan(&t.ID, &t.ToID, &from, &t.Action, &t.Date, &t.Description); err != nil {
+		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &tr.Date, &tr.Description); err != nil {
 			return nil, errors.NewInternal(err, "scan row")
 		}
 
 		// if not null
 		if from.Valid {
-			t.FromID = []byte(strconv.FormatInt(from.Int64, 10))
+			tr.FromID = []byte(strconv.FormatInt(from.Int64, 10))
 		} // else json.RawMessage with 'null'
 
-		trs = append(trs, t)
+		trs = append(trs, tr)
 	}
 
 	return trs, nil

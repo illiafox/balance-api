@@ -1,4 +1,4 @@
-package v1
+package user
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"balance-service/app/internal/controller/http/v1/dto"
+	"balance-service/app/internal/controller/http/v1/user/dto"
 	"balance-service/app/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -21,7 +21,7 @@ import (
 // @Success      200  {object}  dto.TransferBalanceOUT
 // @Failure      422  {object}  dto.Error
 // @Failure      500  {object}  dto.Error
-// @Router       /transfer [put]
+// @Router       /user/transfer [post]
 func (h *handler) TransferBalance(w http.ResponseWriter, r *http.Request) {
 	var transfer dto.TransferBalanceIN
 

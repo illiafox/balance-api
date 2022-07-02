@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"balance-service/app/internal/composites"
+	v1 "balance-service/app/internal/controller/http/v1"
 	_ "balance-service/docs"
 	swagger "github.com/swaggo/http-swagger"
 )
@@ -14,7 +15,6 @@ import (
 func (app *App) Handler() (http.Handler, error) {
 	app.logger.Info("Initializing storages")
 
-	// //
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -34,22 +34,26 @@ func (app *App) Handler() (http.Handler, error) {
 	app.logger.Info("Initializing handlers")
 
 	// //
-	v1, err := composites.NewBalanceComposite(app.logger.Named("api/v1"), pg, r)
+	balance, err := composites.NewBalanceComposite(pg, r)
 	if err != nil {
 		return nil, fmt.Errorf("create balance composite: %w", err)
 	}
 	// //
 
 	// // Routing
-	root := http.NewServeMux()
-	// api/v1
-	root.Handle("/api/v1/", http.StripPrefix("/api/v1", v1.Handler))
+
+	router := http.NewServeMux()
+	{
+		api := http.NewServeMux()
+		api.Handle("/v1/", http.StripPrefix("/v1", v1.New(app.logger.Named("api/v1"), balance)))
+		//
+		router.Handle("/api/", http.StripPrefix("/api", api))
+	}
 
 	if !app.flags.noswag {
 		// swagger
-		root.Handle("/swagger/", swagger.Handler())
+		router.Handle("/swagger/", swagger.Handler())
 	}
-	// //
 
-	return root, nil
+	return router, nil
 }
