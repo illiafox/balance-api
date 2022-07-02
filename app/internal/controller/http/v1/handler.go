@@ -2,46 +2,19 @@ package v1
 
 import (
 	"net/http"
-	"time"
 
-	"balance-service/app/internal/adapters/api"
 	"balance-service/app/internal/adapters/api/balance"
+	"balance-service/app/internal/controller/http/v1/user"
 	"balance-service/app/pkg/logger"
-	"github.com/julienschmidt/httprouter"
 )
 
-type handler struct {
-	balanceService balance.Service
-	//
-	logger logger.Logger
-	//
-	timeout time.Duration
-}
+func New(logger logger.Logger, balanceService balance.Service) http.Handler {
+	router := http.NewServeMux()
 
-func NewHandler(logger logger.Logger, balanceService balance.Service) api.Handler {
-	return &handler{
-		balanceService: balanceService,
-		//
-		logger: logger,
-		//
-		timeout: time.Second,
+	{
+		u := user.New(logger, balanceService).Handler()
+		router.Handle("/user/", http.StripPrefix("/user", u))
 	}
-}
-
-func (h *handler) Register() http.Handler {
-	router := httprouter.New()
-
-	router.GET("/user/:id", h.GetBalance)
-	router.GET("/user/:id/transactions", h.ViewTransactions)
-	//
-	router.POST("/change", wrap(h.ChangeBalance))
-	router.PUT("/transfer", wrap(h.TransferBalance))
 
 	return router
-}
-
-func wrap(f http.HandlerFunc) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
-		f(writer, request)
-	}
 }

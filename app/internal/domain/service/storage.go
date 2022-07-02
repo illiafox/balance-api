@@ -15,6 +15,9 @@ type BalanceStorage interface {
 
 	Transfer(ctx context.Context, fromUserID, towUserID, amount int64, desc string) error
 
+	BlockBalance(ctx context.Context, userID int64, reason string) (err error)
+	UnblockBalance(ctx context.Context, userID int64) (err error)
+
 	// Transaction
 
 	GetTransactions(

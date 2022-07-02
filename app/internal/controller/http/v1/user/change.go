@@ -1,4 +1,4 @@
-package v1
+package user
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"balance-service/app/internal/controller/http/v1/dto"
+	"balance-service/app/internal/controller/http/v1/user/dto"
 	"balance-service/app/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ import (
 // @Failure      400  {object}  dto.Error
 // @Failure      422  {object}  dto.Error
 // @Failure      500  {object}  dto.Error
-// @Router       /change [post]
+// @Router       /user/change [patch]
 func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
 	var change dto.ChangeBalanceIN
 

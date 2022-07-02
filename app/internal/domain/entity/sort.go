@@ -3,7 +3,8 @@ package entity
 type Sort int
 
 const (
-	DateDESC Sort = iota
+	_ Sort = iota
+	DateDESC
 	DateASC
 	SumDESC
 	SumASC

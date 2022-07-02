@@ -1,10 +1,11 @@
 package zap
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"io"
 	"time"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {

@@ -36,8 +36,7 @@ func (app *App) Listen() {
 	}
 
 	// //
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	// //
 
 	go func() {
@@ -58,12 +57,12 @@ func (app *App) Listen() {
 			app.logger.Error("server", zap.Error(err))
 		}
 
-		quit <- nil
+		stop()
 	}()
 
 	// //
 
-	<-quit // wait for signal or nil
+	<-ctx.Done() // wait for signal or nil
 	_, _ = os.Stdout.WriteString("\n")
 
 	// //

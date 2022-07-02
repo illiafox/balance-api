@@ -9,6 +9,7 @@
         <function importPath="fmt" name="Println" />
         <function importPath="fmt" name="Print" />
         <function importPath="balance-service/app/internal/controller/http/v1/dto" name="JSONError" />
+        <function importPath="balance-service/app/internal/controller/http/v1/user/dto" name="JSONError" />
       </functions>
       <methods>
         <method importPath="hash" receiver="Hash" name="Write" />
