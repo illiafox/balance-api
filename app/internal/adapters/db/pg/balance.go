@@ -8,6 +8,7 @@ import (
 	"balance-service/app/internal/domain/entity"
 	"balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
+	"github.com/shopspring/decimal"
 )
 
 func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance int64, err error) {
@@ -99,7 +100,7 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 	} else { // if balance found
 		balance += amount
 		if balance < 0 { // check whether there is enough money to proceed change
-			return fmt.Errorf("insufficient funds: missing %.2f", float64(-balance)/100)
+			return fmt.Errorf("insufficient funds: missing %s", decimal.NewFromInt(-balance).Shift(-2))
 		}
 
 		// update existing balance

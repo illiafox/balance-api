@@ -7,9 +7,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// stores 100
-var divisor = decimal.NewFromInt(100)
-
 func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (string, error) {
 	balance, err := s.balance.GetBalance(ctx, userID)
 	if err != nil {
@@ -21,7 +18,7 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 	}
 
 	// //
-	money := decimal.NewFromInt(balance).Div(divisor)
+	money := decimal.NewFromInt(balance).Shift(-2)
 
 	// exchange rate
 	if abbr != "" {

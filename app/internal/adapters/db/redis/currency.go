@@ -20,7 +20,7 @@ func NewCurrencyStorage(client *redis.Client, name string) service.CurrencyStora
 }
 
 func (s *currencyStorage) Get(ctx context.Context, abbreviation string) (decimal.Decimal, error) {
-	c, err := s.client.WithContext(ctx).HGet(s.name, abbreviation).Float32()
+	c, err := s.client.WithContext(ctx).HGet(s.name, abbreviation).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return decimal.Decimal{}, fmt.Errorf("currency %s not available", abbreviation)
@@ -29,5 +29,10 @@ func (s *currencyStorage) Get(ctx context.Context, abbreviation string) (decimal
 		return decimal.Decimal{}, errors.NewInternal(err, "hget (get data from map)")
 	}
 
-	return decimal.NewFromFloat32(c), nil
+	dec, err := decimal.NewFromString(c)
+	if err != nil {
+		return decimal.Decimal{}, errors.NewInternal(err, "parse decimal")
+	}
+
+	return dec, nil
 }

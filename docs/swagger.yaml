@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /api
 definitions:
   dto.BlockIN:
     properties:
@@ -26,13 +26,6 @@ definitions:
     type: object
   dto.ChangeBalanceOUT:
     properties:
-      ok:
-        type: boolean
-    type: object
-  dto.Error:
-    properties:
-      err:
-        type: string
       ok:
         type: boolean
     type: object
@@ -104,6 +97,13 @@ definitions:
       transaction_id:
         type: integer
     type: object
+  httputils.Error:
+    properties:
+      err:
+        type: string
+      ok:
+        type: boolean
+    type: object
 host: 0.0.0.0:8080
 info:
   contact:
@@ -118,6 +118,74 @@ info:
   title: Balance API
   version: "1.0"
 paths:
+  /admin/block:
+    post:
+      consumes:
+      - application/json
+      description: Block balance by user ID
+      parameters:
+      - description: User ID and Reason
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BlockIN'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BlockOUT'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httputils.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/httputils.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httputils.Error'
+      summary: Block user balance
+      tags:
+      - admin
+  /admin/unblock:
+    post:
+      consumes:
+      - application/json
+      description: Unblock balance by user ID
+      parameters:
+      - description: User ID
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UnblockIN'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UnblockOUT'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httputils.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/httputils.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httputils.Error'
+      summary: Unblock user balance
+      tags:
+      - admin
   /user/{id}:
     get:
       description: Get balance by User ID
@@ -148,15 +216,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
         "406":
           description: Not Acceptable
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
       summary: Get user balance
       tags:
       - balance
@@ -214,48 +282,14 @@ paths:
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
       summary: View user transactions
       tags:
       - transactions
-  /user/block:
-    post:
-      consumes:
-      - application/json
-      description: Block balance by user ID
-      parameters:
-      - description: User ID and Reason
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BlockIN'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.BlockOUT'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.Error'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/dto.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.Error'
-      summary: Block user balance
-      tags:
-      - admin
   /user/change:
     patch:
       consumes:
@@ -277,15 +311,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
       summary: Change user balance
       tags:
       - balance
@@ -311,48 +345,14 @@ paths:
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Error'
+            $ref: '#/definitions/httputils.Error'
       summary: Transfer money between users
       tags:
       - balance
-  /user/unblock:
-    post:
-      consumes:
-      - application/json
-      description: Unblock balance by user ID
-      parameters:
-      - description: User ID
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UnblockIN'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UnblockOUT'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.Error'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/dto.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.Error'
-      summary: Unblock user balance
-      tags:
-      - admin
 schemes:
 - http
 - https
