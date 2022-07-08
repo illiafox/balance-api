@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"balance-service/app/internal/controller/http/v1/user/dto"
+	"balance-service/app/internal/controller/http/httputils"
+	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -24,8 +25,8 @@ import _ "balance-service/app/internal/domain/entity" // for swagger type recogn
 // @Param        offset query   int  	false "output offset" 	minimum(0) default(0)
 // @Param        sort	query   string	false  "sort type"  	Enums(DATE_DESC, DATE_ASC, SUM_DESC, SUM_ASC)
 // @Success      200  {object}  dto.ViewTransactionsOUT{transactions=[]entity.Transaction{from_id=integer}} "Transactions data"
-// @Failure      422  {object}  dto.Error
-// @Failure      500  {object}  dto.Error
+// @Failure      422  {object}  httputils.Error
+// @Failure      500  {object}  httputils.Error
 // @Router       /user/{id}/transactions [get]
 func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var trs dto.ViewTransactionsIN
@@ -33,17 +34,15 @@ func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps ht
 	{
 		id, err := strconv.ParseInt(ps.ByName("id"), 10, 64)
 		if err != nil {
-			dto.JSONError(w, http.StatusBadRequest, fmt.Errorf("invalid request query: parse id: %w", err))
+			_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request query: parse id: %w", err))
+			return
 		}
 		trs.UserID = id
 	}
 
 	// validate
-	if err := trs.ParseAndValidate(
-		r.URL.Query(), // pass query
-	); err != nil {
-		dto.JSONError(w, http.StatusBadRequest, err)
-
+	if err := trs.ParseAndValidate(r.URL.Query()); err != nil {
+		_ = httputils.NewError(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -55,24 +54,24 @@ func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps ht
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			h.logger.Error("get transactions", zap.Error(err), zap.Int64("user_id", trs.UserID))
-			dto.JSONError(w, http.StatusInternalServerError, internal)
+			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 
 			return
 		} else {
-			dto.JSONError(w, http.StatusUnprocessableEntity, err)
+			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
 		}
 
 		return
 	}
 
 	// encode response
-	err = dto.JSONResponse(w, dto.ViewTransactionsOUT{
+	err = httputils.NewResponse(w, dto.ViewTransactionsOUT{
 		Status:       dto.Status{Ok: true},
 		Transactions: t,
 	})
 
 	if err != nil {
 		h.logger.Error("/view: encode response", zap.Error(err))
-		dto.JSONError(w, http.StatusInternalServerError, err)
+		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }

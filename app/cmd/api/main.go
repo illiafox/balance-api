@@ -17,7 +17,7 @@ import (
 // @license.url https://opensource.org/licenses/BSL-1.0
 
 // @host 0.0.0.0:8080
-// @BasePath /api/v1
+// @BasePath /api
 // @schemes http https
 
 func main() {

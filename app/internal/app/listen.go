@@ -28,11 +28,13 @@ func (app *App) Listen() {
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%s:%d", app.cfg.Host.Addr, app.cfg.Host.Port),
 		//
-		WriteTimeout: time.Second * 3,
-		ReadTimeout:  time.Second * 3,
-		IdleTimeout:  time.Second * 15,
-		//
 		Handler: handler,
+	}
+
+	if !app.flags.pprof {
+		srv.WriteTimeout = time.Second * 3
+		srv.ReadTimeout = time.Second * 3
+		srv.IdleTimeout = time.Second * 15
 	}
 
 	// //
