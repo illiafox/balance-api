@@ -23,6 +23,7 @@ func (s *balanceStorage) GetTransactions(
 	userID, limit, offset int64,
 	sort entity.Sort,
 ) ([]entity.Transaction, error) {
+
 	// get ORDER BY clause
 	order, ok := sorts[sort]
 	if !ok {
@@ -51,7 +52,9 @@ func (s *balanceStorage) GetTransactions(
 	defer rows.Close()
 
 	var (
-		trs  = make([]entity.Transaction, 0, 1)
+		//
+		trs = make([]entity.Transaction, 0, 1)
+		//
 		tr   entity.Transaction
 		from types.NullInt64
 	)
@@ -69,6 +72,10 @@ func (s *balanceStorage) GetTransactions(
 		} // else json.RawMessage with 'null'
 
 		trs = append(trs, tr)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.NewInternal(err, "rows")
 	}
 
 	return trs, nil

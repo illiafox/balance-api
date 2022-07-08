@@ -1,4 +1,4 @@
-package user
+package admin
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"balance-service/app/internal/controller/http/v1/user/dto"
+	dto "balance-service/app/internal/controller/http/admin/dto"
+	"balance-service/app/internal/controller/http/httputils"
 	"balance-service/app/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -19,10 +20,10 @@ import (
 // @Produce      json
 // @Param        input body 	dto.BlockIN		true 	"User ID and Reason"
 // @Success      200  {object}  dto.BlockOUT
-// @Failure      400  {object}  dto.Error
-// @Failure      422  {object}  dto.Error
-// @Failure      500  {object}  dto.Error
-// @Router       /user/block [post]
+// @Failure      400  {object}  httputils.Error
+// @Failure      422  {object}  httputils.Error
+// @Failure      500  {object}  httputils.Error
+// @Router       /admin/block [post]
 func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 
 	var block dto.BlockIN
@@ -30,15 +31,14 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 	// decode body
 	defer r.Body.Close() // ignore error
 	if err := json.NewDecoder(r.Body).Decode(&block); err != nil {
-		dto.JSONError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
+		_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
 
 		return
 	}
 
 	// validate struct
 	if err := block.Validate(); err != nil {
-		dto.JSONError(w, http.StatusBadRequest, err)
-
+		_ = httputils.NewError(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -50,17 +50,17 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			h.logger.Error("/block: block balance", zap.Error(err), zap.Int64("user_id", block.UserID))
-			dto.JSONError(w, http.StatusInternalServerError, internal)
+			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
-			dto.JSONError(w, http.StatusUnprocessableEntity, err)
+			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
 		}
 
 		return
 	}
 
-	if err = dto.JSONResponse(w, dto.BlockOUT{Ok: true}); err != nil {
+	if err = httputils.NewResponse(w, dto.BlockOUT{Ok: true}); err != nil {
 		h.logger.Error("/block: encode response", zap.Error(err))
-		dto.JSONError(w, http.StatusInternalServerError, err)
+		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }
 
@@ -72,10 +72,10 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        input body 	dto.UnblockIN		true 	"User ID"
 // @Success      200  {object}  dto.UnblockOUT
-// @Failure      400  {object}  dto.Error
-// @Failure      422  {object}  dto.Error
-// @Failure      500  {object}  dto.Error
-// @Router       /user/unblock [post]
+// @Failure      400  {object}  httputils.Error
+// @Failure      422  {object}  httputils.Error
+// @Failure      500  {object}  httputils.Error
+// @Router       /admin/unblock [post]
 func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 
 	var unblock dto.UnblockIN
@@ -83,15 +83,14 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 	// decode body
 	defer r.Body.Close() // ignore error
 	if err := json.NewDecoder(r.Body).Decode(&unblock); err != nil {
-		dto.JSONError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
+		_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
 
 		return
 	}
 
 	// validate struct
 	if err := unblock.Validate(); err != nil {
-		dto.JSONError(w, http.StatusBadRequest, err)
-
+		_ = httputils.NewError(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -103,16 +102,16 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			h.logger.Error("/unblock: unblock balance", zap.Error(err), zap.Int64("user_id", unblock.UserID))
-			dto.JSONError(w, http.StatusInternalServerError, internal)
+			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
-			dto.JSONError(w, http.StatusUnprocessableEntity, err)
+			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
 		}
 
 		return
 	}
 
-	if err = dto.JSONResponse(w, dto.UnblockOUT{Ok: true}); err != nil {
+	if err = httputils.NewResponse(w, dto.UnblockOUT{Ok: true}); err != nil {
 		h.logger.Error("/unblock: encode response", zap.Error(err))
-		dto.JSONError(w, http.StatusInternalServerError, err)
+		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }

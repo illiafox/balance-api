@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.transaction
 (
     transaction_id BIGINT GENERATED ALWAYS AS IDENTITY,
+    CONSTRAINT transaction_id PRIMARY KEY (transaction_id),
     --
     to_id          BIGINT                   NOT NULL,
  --   CONSTRAINT to_id FOREIGN KEY (to_id) REFERENCES balance (user_id)
@@ -15,3 +16,6 @@ CREATE TABLE IF NOT EXISTS public.transaction
         DEFAULT (now() at time zone 'utc'),
     description    TEXT                     NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS transaction_to_id_idx ON transaction (to_id);
+CREATE INDEX IF NOT EXISTS transaction_from_id_idx ON transaction (from_id);

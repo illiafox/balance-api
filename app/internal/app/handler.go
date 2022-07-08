@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"time"
 
 	"balance-service/app/internal/composites"
-	v1 "balance-service/app/internal/controller/http/v1"
+	api "balance-service/app/internal/controller/http"
 	_ "balance-service/docs"
 	swagger "github.com/swaggo/http-swagger"
 )
@@ -43,16 +44,25 @@ func (app *App) Handler() (http.Handler, error) {
 	// // Routing
 
 	router := http.NewServeMux()
-	{
-		api := http.NewServeMux()
-		api.Handle("/v1/", http.StripPrefix("/v1", v1.New(app.logger.Named("api/v1"), balance)))
-		//
-		router.Handle("/api/", http.StripPrefix("/api", api))
+
+	// API
+	router.Handle("/api/", http.StripPrefix("/api",
+		api.New(app.logger.Named("api/handlers"), balance)),
+	)
+
+	// Swagger
+	if app.flags.swagger { // swagger
+		router.Handle("/swagger/", swagger.Handler())
 	}
 
-	if !app.flags.noswag {
-		// swagger
-		router.Handle("/swagger/", swagger.Handler())
+	// pprof
+	if app.flags.pprof { // pprof
+		router.HandleFunc("/debug/pprof/", pprof.Index)
+		router.HandleFunc("/debug/pprof/heap", pprof.Index)
+		router.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		router.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		router.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		router.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	}
 
 	return router, nil

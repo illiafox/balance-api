@@ -10,7 +10,7 @@ import (
 )
 
 type flags struct {
-	https, noswag bool
+	https, swagger, pprof bool
 }
 
 func New() *App {
@@ -19,7 +19,8 @@ func New() *App {
 		logPath = flag.String("log", "log.txt", "log file path")
 		//
 		https  = flag.Bool("https", false, "run server in https mode")
-		noswag = flag.Bool("noswag", false, "disable swagger")
+		noswag = flag.Bool("swagger", false, "enable swagger")
+		pprof  = flag.Bool("pprof", false, "enable pprof")
 	)
 
 	flag.Parse()
@@ -34,8 +35,9 @@ func New() *App {
 
 	app := App{
 		flags: flags{
-			https:  *https,
-			noswag: *noswag,
+			https:   *https,
+			swagger: *noswag,
+			pprof:   *pprof,
 		},
 		//
 		logger: logger.Logger,

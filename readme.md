@@ -96,7 +96,7 @@ app -https
 
 ### Disable swagger
 ```shell
-app -noswag
+app -swagger
 ```
 
 ## PostgreSQL Migrations
