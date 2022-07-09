@@ -1,13 +1,21 @@
 package dto
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
 type GetBalanceIN struct {
 	UserID int64  `json:"user_id"`
 	Base   string `json:"base"`
+}
+
+type Balance string
+
+func (b Balance) MarshalJSON() ([]byte, error) {
+	if len(b) > 0 {
+		return []byte(b), nil
+	}
+	return []byte("null"), nil
 }
 
 func (g GetBalanceIN) Validate() error {
@@ -19,6 +27,6 @@ func (g GetBalanceIN) Validate() error {
 
 type GetBalanceOUT struct {
 	Status
-	Balance json.RawMessage `json:"balance"`
-	Base    string          `json:"base,omitempty"`
+	Balance Balance `json:"balance"`
+	Base    string  `json:"base,omitempty"`
 }
