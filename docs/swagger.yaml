@@ -32,9 +32,7 @@ definitions:
   dto.GetBalanceOUT:
     properties:
       balance:
-        items:
-          type: integer
-        type: array
+        type: string
       base:
         type: string
       ok:

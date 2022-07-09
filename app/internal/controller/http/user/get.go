@@ -55,8 +55,6 @@ func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request, ps httprout
 		if internal, ok := errors.ToInternal(err); ok {
 			h.logger.Error("get balance", zap.Error(err), zap.Int64("user_id", get.UserID), zap.String("base", get.Base))
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
-
-			return
 		} else {
 			_ = httputils.NewError(w, http.StatusNotAcceptable, err)
 		}
@@ -68,7 +66,7 @@ func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request, ps httprout
 	err = httputils.NewResponse(w, dto.GetBalanceOUT{
 		Status:  dto.Status{Ok: true},
 		Base:    get.Base,
-		Balance: []byte(balance),
+		Balance: dto.Balance(balance),
 	})
 	if err != nil {
 		h.logger.Error("encode response", zap.Error(err), zap.String("balance", balance))

@@ -24,7 +24,7 @@ clean:
 
 .PHONY: compose
 compose: compose-down
-	docker-compose up -d
+	docker-compose up -d --wait
 
 .PHONY: compose-debug
 compose-debug: compose-down swagger
