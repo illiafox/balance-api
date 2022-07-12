@@ -1,12 +1,10 @@
 package user
 
 import (
-	"context"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"balance-service/app/internal/controller/http/httputils"
+	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
 	"github.com/julienschmidt/httprouter"
@@ -24,39 +22,36 @@ import _ "balance-service/app/internal/domain/entity" // for swagger type recogn
 // @Param        limit  query   int  	false "output limit"	minimum(0) maximum(100) default(100)
 // @Param        offset query   int  	false "output offset" 	minimum(0) default(0)
 // @Param        sort	query   string	false  "sort type"  	Enums(DATE_DESC, DATE_ASC, SUM_DESC, SUM_ASC)
-// @Success      200  {object}  dto.ViewTransactionsOUT{transactions=[]entity.Transaction{from_id=integer}} "Transactions data"
+// @Success      200  {object}  dto.ViewTransactionsOUT "Transactions data"
 // @Failure      422  {object}  httputils.Error
 // @Failure      500  {object}  httputils.Error
 // @Router       /user/{id}/transactions [get]
 func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var trs dto.ViewTransactionsIN
+	ctx := r.Context() // context with logger
 
-	{
-		id, err := strconv.ParseInt(ps.ByName("id"), 10, 64)
-		if err != nil {
-			_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request query: parse id: %w", err))
-			return
-		}
-		trs.UserID = id
-	}
+	// // parse input
 
-	// validate
-	if err := trs.ParseAndValidate(r.URL.Query()); err != nil {
+	view, err := dto.NewViewTransactionsIN(
+		ps.ByName("id"), // path
+		r,               // request (url query)
+	)
+
+	if err != nil {
 		_ = httputils.NewError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	// // call service
-	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
-	defer cancel()
+	// // call services
 
-	t, err := h.balanceService.GetTransactions(ctx, trs.UserID, trs.Limit, trs.Offset, trs.Sort)
+	// get transactions
+	t, err := h.balanceService.GetTransactions(ctx, view.UserID, view.Limit, view.Offset, view.Sort)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
-			h.logger.Error("get transactions", zap.Error(err), zap.Int64("user_id", trs.UserID))
+			middleware.GetLogger(ctx).Error("get transactions",
+				zap.Error(err),
+				zap.Uint64("user_id", view.UserID),
+			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
-
-			return
 		} else {
 			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
 		}
@@ -64,14 +59,18 @@ func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
-	// encode response
-	err = httputils.NewResponse(w, dto.ViewTransactionsOUT{
-		Status:       dto.Status{Ok: true},
+	out := dto.ViewTransactionsOUT{
+		Status:       httputils.Status{Ok: true},
 		Transactions: t,
-	})
+	}
+
+	// // encode response
+	err = httputils.NewResponse(w, out)
 
 	if err != nil {
-		h.logger.Error("/view: encode response", zap.Error(err))
+		middleware.GetLogger(ctx).Error("encode response",
+			zap.Error(err), zap.Any("response", out),
+		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }

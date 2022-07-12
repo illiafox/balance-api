@@ -2,53 +2,50 @@ package dto
 
 import (
 	"fmt"
-	"net/url"
+	"net/http"
 	"strconv"
 
+	"balance-service/app/internal/controller/http/httputils"
 	"balance-service/app/internal/domain/entity"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/gookit/validate"
 )
 
 type ViewTransactionsIN struct {
-	UserID int64  `json:"user_id" validate:"required|gt:0"`
-	Sort   string `json:"sort"    validate:"required"`
-	Limit  int64  `json:"limit"   validate:"required|gt:0|lte:100"`
-	Offset int64  `json:"offset"  validate:"gte:0"`
+	Sort   string `query:"sort"`
+	Limit  uint64 `query:"limit"            validate:"required|gt:0|lte:100"`
+	Offset uint64 `query:"offset"           validate:"gte:0"`
+	UserID uint64 `validate:"required|gt:0"`
 }
 
-func (v *ViewTransactionsIN) ParseAndValidate(query url.Values) error {
+func NewViewTransactionsIN(id string, r *http.Request) (ViewTransactionsIN, error) {
 	var err error
-
-	// sort
-	v.Sort = query.Get("sort")
-
-	// offset
-	if offset := query.Get("offset"); offset != "" {
-		if v.Offset, err = strconv.ParseInt(offset, 10, 64); err != nil {
-			return fmt.Errorf("parse offset: %w", err)
-		}
-
-		if v.Offset < 0 {
-			return fmt.Errorf("wrong offset value: %d", v.Offset)
-		}
+	view := ViewTransactionsIN{
+		Limit: 100,
+	}
+	// UserID
+	if view.UserID, err = strconv.ParseUint(id, 10, 64); err != nil {
+		return view, fmt.Errorf("parse id: %w", err)
+	}
+	if view.UserID <= 0 {
+		return view, fmt.Errorf("id: expected > 0, got %d", view.UserID)
 	}
 
-	// limit
-	if limit := query.Get("limit"); limit != "" {
-		if v.Limit, err = strconv.ParseInt(limit, 10, 64); err != nil {
-			return fmt.Errorf("parse offset: %w", err)
-		}
-
-		if v.Limit < 0 || v.Limit > 100 {
-			return fmt.Errorf("wrong limit value: %d", v.Offset)
-		}
-	} else {
-		v.Limit = 100
+	// Bind
+	err = binding.Query.Bind(r, &view)
+	if err != nil {
+		return view, fmt.Errorf("bind: %w", err)
 	}
 
-	return nil
+	// Validate
+	if v := validate.Struct(view); !v.Validate() {
+		return view, v.Errors.OneError()
+	}
+	//
+	return view, nil
 }
 
 type ViewTransactionsOUT struct {
-	Status
+	httputils.Status
 	Transactions []entity.Transaction `json:"transactions"`
 }

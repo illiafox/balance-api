@@ -75,13 +75,15 @@ services:
 
     build: .
     command:
-      - "-pprof"
+      # - "-pprof"
       - "-swagger"
+      - "-prom"
     ports:
       - "8080:8080"
 
     env_file:
       - .env
+
     environment:
       - POSTGRES_IP=postgres
       - POSTGRES_PORT=5432
@@ -89,7 +91,8 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=balance_api
 
-      - REDIS_ADDRESS=redis:6379
+      - REDIS_IP=redis
+      - REDIS_PORT=6379
       - REDIS_PASS=
       - REDIS_DB=0
 

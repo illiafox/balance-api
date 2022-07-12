@@ -1,9 +1,12 @@
 package dto
 
-import "github.com/gookit/validate"
+import (
+	"balance-service/app/internal/controller/http/httputils"
+	"github.com/gookit/validate"
+)
 
 type ChangeBalanceIN struct {
-	UserID      int64  `json:"user_id"     validate:"required|gt:0"`
+	UserID      uint64 `json:"user_id"     validate:"required|gt:0"`
 	Amount      int64  `json:"change"      validate:"required|ne:1"`
 	Description string `json:"description" validate:"required"` // |min_len:10
 }
@@ -16,4 +19,4 @@ func (c ChangeBalanceIN) Validate() error {
 	return nil
 }
 
-type ChangeBalanceOUT Status
+type ChangeBalanceOUT httputils.Status

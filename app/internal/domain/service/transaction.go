@@ -10,7 +10,7 @@ import (
 
 func (s *balanceService) GetTransactions(
 	ctx context.Context,
-	userID, limit, offset int64,
+	userID, limit, offset uint64,
 	sort string,
 ) ([]entity.Transaction, error) {
 

@@ -1,12 +1,12 @@
 package user
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"balance-service/app/internal/controller/http/httputils"
+	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
 	"go.uber.org/zap"
@@ -18,19 +18,21 @@ import (
 // @Tags         balance
 // @Accept       json
 // @Produce      json
-// @Param        input body 	dto.ChangeBalanceIN		false 	"User ID, Change amount and Description"
+// @Param        input   body 	dto.ChangeBalanceIN		false 	"User ID, Change amount and Description"
 // @Success      200  {object}  dto.ChangeBalanceOUT
 // @Failure      400  {object}  httputils.Error
 // @Failure      422  {object}  httputils.Error
 // @Failure      500  {object}  httputils.Error
 // @Router       /user/change [patch]
 func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context() // context with logger
 
-	//r.Context().Value("logger").(*zap.Logger).Info("/change: change balance")
+	// // parse input
 	var change dto.ChangeBalanceIN
 
 	// decode body
 	defer r.Body.Close() // ignore error
+
 	if err := json.NewDecoder(r.Body).Decode(&change); err != nil {
 		_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
 		return
@@ -42,14 +44,17 @@ func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// // call service
-	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
-	defer cancel()
+	// // call services
 
+	// change balance
 	err := h.balanceService.Change(ctx, change.UserID, change.Amount, change.Description)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
-			h.logger.Error("/change: change balance", zap.Error(err), zap.Int64("user_id", change.UserID), zap.Int64("amount", change.Amount))
+			middleware.GetLogger(ctx).Error("change balance",
+				zap.Error(err),
+				zap.Uint64("user_id", change.UserID),
+				zap.Int64("amount", change.Amount),
+			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
 			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
@@ -58,10 +63,15 @@ func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// // encode response
+	out := dto.ChangeBalanceOUT{Ok: true}
 
-	if err = httputils.NewResponse(w, dto.ChangeBalanceOUT{Ok: true}); err != nil {
-		h.logger.Error("/change: encode response", zap.Error(err))
+	// // encode response
+	err = httputils.NewResponse(w, out)
+
+	if err != nil {
+		middleware.GetLogger(ctx).Error("encode response",
+			zap.Error(err), zap.Any("response", out),
+		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }

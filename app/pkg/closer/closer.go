@@ -10,13 +10,8 @@ import (
 )
 
 type Closers struct {
-	logger  logger.Logger
 	mutex   sync.Mutex
 	closers []io.Closer
-}
-
-func New(logger logger.Logger) Closers {
-	return Closers{logger: logger}
 }
 
 func (c *Closers) Add(closer io.Closer) {
@@ -26,7 +21,7 @@ func (c *Closers) Add(closer io.Closer) {
 	c.closers = append(c.closers, closer)
 }
 
-func (c *Closers) Close() {
+func (c *Closers) Close(logger logger.Logger) {
 	if c.closers == nil {
 		panic("closers are empty")
 	}
@@ -38,7 +33,7 @@ func (c *Closers) Close() {
 		closer := c.closers[i]
 		//
 		if err := closer.Close(); err != nil {
-			c.logger.Error(fmt.Sprintf("close %T", closer), zap.Error(err))
+			logger.Error(fmt.Sprintf("close %T", closer), zap.Error(err))
 		}
 	}
 
