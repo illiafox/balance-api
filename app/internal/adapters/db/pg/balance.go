@@ -11,7 +11,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance int64, err error) {
+func (s balanceStorage) GetBalance(ctx context.Context, userID uint64) (balance int64, err error) {
 	// pool.QueryRow() acquires and releases connection automatically
 	err = s.pool.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1", userID).Scan(&balance)
 	if err != nil {
@@ -25,7 +25,7 @@ func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance i
 	return
 }
 
-func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID int64) (balance int64, err error) {
+func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID uint64) (balance uint64, err error) {
 
 	// pool.QueryRow() acquires and releases connection automatically
 	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE", userID).
@@ -43,7 +43,7 @@ func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID
 	return
 }
 
-func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount int64, desc string) (err error) {
+func (s balanceStorage) ChangeBalance(ctx context.Context, userID uint64, amount int64, desc string) (err error) {
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
@@ -125,7 +125,7 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 	return
 }
 
-func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) (err error) {
+func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amount uint64, desc string) (err error) {
 
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
@@ -159,7 +159,7 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	}
 
 	//
-	var receiver int64
+	var receiver uint64
 	//
 
 	// get receiver balance

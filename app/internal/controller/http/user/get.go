@@ -1,12 +1,10 @@
 package user
 
 import (
-	"context"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"balance-service/app/internal/controller/http/httputils"
+	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
 	"github.com/julienschmidt/httprouter"
@@ -26,34 +24,25 @@ import (
 // @Failure      500  {object}  httputils.Error
 // @Router       /user/{id} [get]
 func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	ctx := r.Context() // context with logger
 
-	// read query values
-	var get = dto.GetBalanceIN{
-		Base: r.URL.Query().Get("base"),
-	}
+	// // parse input
+	get, err := dto.NewGetBalanceIN(
+		ps.ByName("id"),           // path
+		r.URL.Query().Get("base"), // query
+	)
 
-	// path parameter
-	var err error
-	if get.UserID, err = strconv.ParseInt(ps.ByName("id"), 10, 64); err != nil {
-		_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request query: parse id: %w", err))
-		return
-	}
-
-	// validate
-	if err := get.Validate(); err != nil {
+	if err != nil {
 		_ = httputils.NewError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	// // call service
-	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
-	defer cancel()
+	// // call services
 
+	// get balance
 	balance, err := h.balanceService.Get(ctx, get.UserID, get.Base)
 	if err != nil {
-
 		if internal, ok := errors.ToInternal(err); ok {
-			h.logger.Error("get balance", zap.Error(err), zap.Int64("user_id", get.UserID), zap.String("base", get.Base))
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
 			_ = httputils.NewError(w, http.StatusNotAcceptable, err)
@@ -62,14 +51,20 @@ func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	// // encode response
-	err = httputils.NewResponse(w, dto.GetBalanceOUT{
-		Status:  dto.Status{Ok: true},
+	out := dto.GetBalanceOUT{
+		Status:  httputils.Status{Ok: true},
 		Base:    get.Base,
 		Balance: dto.Balance(balance),
-	})
+	}
+
+	// // encode response
+	err = httputils.NewResponse(w, out)
+
 	if err != nil {
-		h.logger.Error("encode response", zap.Error(err), zap.String("balance", balance))
+		middleware.GetLogger(ctx).Error("encode response",
+			zap.Error(err),
+			zap.Any("response", out),
+		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }

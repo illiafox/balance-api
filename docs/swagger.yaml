@@ -85,10 +85,8 @@ definitions:
       description:
         type: string
       from_id:
-        description: number or "null"
-        items:
-          type: integer
-        type: array
+        description: zero -> null -> received from other service
+        type: integer
       to_id:
         description: to_id
         type: integer
@@ -264,19 +262,7 @@ paths:
         "200":
           description: Transactions data
           schema:
-            allOf:
-            - $ref: '#/definitions/dto.ViewTransactionsOUT'
-            - properties:
-                transactions:
-                  items:
-                    allOf:
-                    - $ref: '#/definitions/entity.Transaction'
-                    - properties:
-                        from_id:
-                          type: integer
-                      type: object
-                  type: array
-              type: object
+            $ref: '#/definitions/dto.ViewTransactionsOUT'
         "422":
           description: Unprocessable Entity
           schema:

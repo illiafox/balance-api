@@ -22,9 +22,10 @@ clean:
 	if [ -f $(BUILD)/app ]; then rm $(BUILD)/app; fi
 
 
+# # docker compose
 .PHONY: compose
 compose: compose-down
-	docker-compose up -d --wait
+	docker-compose up -d
 
 .PHONY: compose-debug
 compose-debug: compose-down swagger
@@ -35,12 +36,12 @@ compose-debug: compose-down swagger
 compose-down:
 	docker-compose down
 
+# # tests
 .PHONY: test
 test:
 	go test -v ./...
 
-# swagger
-
+# # swagger
 .PHONY: swagger
 swagger:
 	 swag init --parseDependency --parseInternal \
@@ -48,7 +49,7 @@ swagger:
      -g=./app/cmd/api/main.go --outputTypes=yaml,go
 
 
-# gci
+# # linters
 .PHONY: gci
 gci:
 	find . -name "*.go" -exec gci write {} \;
