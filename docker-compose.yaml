@@ -75,7 +75,7 @@ services:
 
     build: .
     command:
-      # - "-pprof"
+      - "-pprof"
       - "-swagger"
       - "-prom"
     ports:
