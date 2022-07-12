@@ -14,7 +14,7 @@ func (app *App) ReadConfig() {
 		app.logger.Error("read config", zap.Error(err))
 
 		// close logger
-		app.closers.Close()
+		app.closers.Close(app.logger)
 
 		os.Exit(1)
 	}

@@ -20,13 +20,14 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 		encoder.AppendString(caller.TrimmedPath())
 		encoder.AppendString("|")
 	}
-
+	//
 	pe.EncodeTime = zapcore.TimeEncoderOfLayout("02/01 15:04:05") // "02/01/2006 15:04:05 |"
 	pe.ConsoleSeparator = " "
 	pe.EncodeName = func(n string, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(n)
 		enc.AppendString("|")
 	}
+	//
 	pe.EncodeLevel = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString("|")
 		enc.AppendString(l.CapitalString())

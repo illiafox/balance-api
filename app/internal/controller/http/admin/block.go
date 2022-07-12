@@ -1,13 +1,13 @@
 package admin
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	dto "balance-service/app/internal/controller/http/admin/dto"
 	"balance-service/app/internal/controller/http/httputils"
+	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -25,10 +25,12 @@ import (
 // @Failure      500  {object}  httputils.Error
 // @Router       /admin/block [post]
 func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context() // context with logger
 
+	// // parse input
 	var block dto.BlockIN
 
-	// decode body
+	// decode json
 	defer r.Body.Close() // ignore error
 	if err := json.NewDecoder(r.Body).Decode(&block); err != nil {
 		_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
@@ -42,14 +44,15 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// // call service
-	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
-	defer cancel()
+	// // call services
 
+	// block balance
 	err := h.balanceService.BlockBalance(ctx, block.UserID, block.Reason)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
-			h.logger.Error("/block: block balance", zap.Error(err), zap.Int64("user_id", block.UserID))
+			middleware.GetLogger(ctx).Error("block balance",
+				zap.Error(err), zap.Uint64("user_id", block.UserID),
+			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
 			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
@@ -58,8 +61,15 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = httputils.NewResponse(w, dto.BlockOUT{Ok: true}); err != nil {
-		h.logger.Error("/block: encode response", zap.Error(err))
+	out := dto.BlockOUT{Ok: true}
+
+	// // encode response
+	err = httputils.NewResponse(w, out)
+
+	if err != nil {
+		middleware.GetLogger(ctx).Error("encode response",
+			zap.Error(err), zap.Any("response", out),
+		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }
@@ -77,10 +87,12 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 // @Failure      500  {object}  httputils.Error
 // @Router       /admin/unblock [post]
 func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context() // context with logger
 
+	// // parse input
 	var unblock dto.UnblockIN
 
-	// decode body
+	// decode json
 	defer r.Body.Close() // ignore error
 	if err := json.NewDecoder(r.Body).Decode(&unblock); err != nil {
 		_ = httputils.NewError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
@@ -94,14 +106,15 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// // call service
-	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
-	defer cancel()
+	// // call services
 
+	// unblock
 	err := h.balanceService.UnblockBalance(ctx, unblock.UserID)
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
-			h.logger.Error("/unblock: unblock balance", zap.Error(err), zap.Int64("user_id", unblock.UserID))
+			middleware.GetLogger(ctx).Error("unblock balance",
+				zap.Error(err), zap.Uint64("user_id", unblock.UserID),
+			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
 			_ = httputils.NewError(w, http.StatusUnprocessableEntity, err)
@@ -110,8 +123,15 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = httputils.NewResponse(w, dto.UnblockOUT{Ok: true}); err != nil {
-		h.logger.Error("/unblock: encode response", zap.Error(err))
+	out := dto.UnblockOUT{Ok: true}
+
+	// // encode response
+	err = httputils.NewResponse(w, out)
+
+	if err != nil {
+		middleware.GetLogger(ctx).Error("encode response",
+			zap.Error(err), zap.Any("response", out),
+		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
 }

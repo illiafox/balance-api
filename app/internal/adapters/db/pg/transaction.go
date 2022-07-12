@@ -2,12 +2,13 @@ package pg
 
 import (
 	"context"
-	types "database/sql"
+	"database/sql"
 	"fmt"
-	"strconv"
+	"time"
 
 	"balance-service/app/internal/domain/entity"
 	"balance-service/app/pkg/errors"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -20,7 +21,7 @@ var sorts = map[entity.Sort]string{
 
 func (s *balanceStorage) GetTransactions(
 	ctx context.Context,
-	userID, limit, offset int64,
+	userID, limit, offset uint64,
 	sort entity.Sort,
 ) ([]entity.Transaction, error) {
 
@@ -37,9 +38,16 @@ func (s *balanceStorage) GetTransactions(
 	}
 	defer c.Release()
 
+	// generate query
+	query, args, err := sq.Select("*").From("transaction").
+		Where("to_id = $1 OR from_id = $1", userID).
+		OrderBy(order).Limit(limit).Offset(offset).ToSql()
+	if err != nil {
+		return nil, errors.NewInternal(err, "generate sql query")
+	}
+
 	// get transactions
-	rows, err := c.Query(ctx, "SELECT * FROM transaction WHERE to_id = $1 OR from_id = $1 ORDER BY $2 LIMIT $3 OFFSET $4",
-		userID, order, limit, offset)
+	rows, err := c.Query(ctx, query, args...)
 
 	if err != nil {
 		//nolint:errorlint
@@ -52,25 +60,21 @@ func (s *balanceStorage) GetTransactions(
 	defer rows.Close()
 
 	var (
-		//
 		trs = make([]entity.Transaction, 0, 1)
-		//
-		tr   entity.Transaction
-		from types.NullInt64
+		tr  entity.Transaction
+		// custom types
+		t    time.Time
+		from sql.NullInt64
 	)
 
 	for rows.Next() {
-		tr.FromID = nil // set 'null'
-
-		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &tr.Date, &tr.Description); err != nil {
+		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &t, &tr.Description); err != nil {
 			return nil, errors.NewInternal(err, "scan row")
 		}
-
-		// if not null
-		if from.Valid {
-			tr.FromID = []byte(strconv.FormatInt(from.Int64, 10))
-		} // else json.RawMessage with 'null'
-
+		//
+		tr.FromID = from.Int64
+		tr.Date = entity.Time(t)
+		//
 		trs = append(trs, tr)
 	}
 
