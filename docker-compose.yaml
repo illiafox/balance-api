@@ -2,6 +2,7 @@ version: '3.8'
 
 volumes:
   pgdata:
+  redis-data:
 
 services:
   pg:
@@ -64,6 +65,9 @@ services:
 
     environment:
       REDIS_REPLICATION_MODE: master
+
+    volumes:
+      - redis-data:/var/lib/redis
 
     networks:
       - local

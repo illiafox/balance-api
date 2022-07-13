@@ -11,8 +11,6 @@ import (
 	"go.uber.org/zap"
 )
 
-import _ "balance-service/app/internal/domain/entity" // for swagger type recognition
-
 // ViewTransactions
 // @Summary      View user transactions
 // @Description  View transactions with sorting and pagination

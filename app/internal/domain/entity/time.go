@@ -7,7 +7,7 @@ import (
 
 type Time time.Time
 
-const TimeLayout = `2006-01-02 15:04:05 MST`
+const TimeLayout = time.RFC822
 
 func (t Time) MarshalJSON() ([]byte, error) {
 	return []byte(

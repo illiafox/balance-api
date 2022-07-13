@@ -1,9 +1,11 @@
-package pg
+package balance
 
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"balance-service/app/internal/domain/entity"
 	"balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
 )
@@ -30,7 +32,10 @@ func (s balanceStorage) BlockBalance(ctx context.Context, userID uint64, reason 
 
 	var balance int64
 
-	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE", userID).Scan(&balance)
+	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE",
+		userID,
+	).Scan(&balance)
+
 	if err != nil {
 		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> balance not found
@@ -46,7 +51,9 @@ func (s balanceStorage) BlockBalance(ctx context.Context, userID uint64, reason 
 	}
 
 	// insert blocked balance
-	_, err = tx.Exec(ctx, "INSERT INTO block (user_id, balance, reason) VALUES ($1,$2,$3)", userID, balance, reason)
+	_, err = tx.Exec(ctx, "INSERT INTO block (user_id, balance, reason) VALUES ($1,$2,$3)",
+		userID, balance, reason,
+	)
 	if err != nil {
 		return errors.NewInternal(err, "exec: block balance")
 	}
@@ -82,7 +89,10 @@ func (s balanceStorage) UnblockBalance(ctx context.Context, userID uint64) (err 
 
 	var balance int64
 
-	err = tx.QueryRow(ctx, "SELECT balance FROM block WHERE user_id = $1 FOR UPDATE", userID).Scan(&balance)
+	err = tx.QueryRow(ctx, "SELECT balance FROM block WHERE user_id = $1 FOR UPDATE",
+		userID,
+	).Scan(&balance)
+
 	if err != nil {
 		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> balance not found
@@ -98,7 +108,9 @@ func (s balanceStorage) UnblockBalance(ctx context.Context, userID uint64) (err 
 	}
 
 	// insert balance
-	_, err = tx.Exec(ctx, "INSERT INTO balance (user_id, balance) VALUES ($1,$2)", userID, balance)
+	_, err = tx.Exec(ctx, "INSERT INTO balance (user_id, balance) VALUES ($1,$2)",
+		userID, balance,
+	)
 	if err != nil {
 		return errors.NewInternal(err, "exec: block balance")
 	}
@@ -110,4 +122,26 @@ func (s balanceStorage) UnblockBalance(ctx context.Context, userID uint64) (err 
 	}
 
 	return
+}
+
+func (balanceStorage) userBlocked(ctx context.Context, tx pgx.Tx, userID uint64) error {
+	var (
+		reason string
+		date   time.Time
+	)
+
+	// // check if user is not blocked
+	err := tx.QueryRow(ctx, "SELECT reason, date FROM block WHERE user_id = $1",
+		userID,
+	).Scan(&reason, &date)
+
+	if err != nil { // no error -> balance is blocked
+		if err == pgx.ErrNoRows {
+			return nil // no rows -> balance is not blocked
+		}
+		// internal
+		return errors.NewInternal(err, "query: check if user is not blocked")
+	}
+
+	return fmt.Errorf("receive balance is blocked with reason '%s' at %s", reason, date.Format(entity.TimeLayout))
 }
