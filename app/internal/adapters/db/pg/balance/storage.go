@@ -1,4 +1,4 @@
-package pg
+package balance
 
 import (
 	"balance-service/app/internal/domain/service"
@@ -9,6 +9,6 @@ type balanceStorage struct {
 	pool *pgxpool.Pool
 }
 
-func NewBalanceStorage(pool *pgxpool.Pool) service.BalanceStorage {
+func NewStorage(pool *pgxpool.Pool) service.BalanceStorage {
 	return &balanceStorage{pool: pool}
 }

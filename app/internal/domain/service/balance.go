@@ -21,8 +21,7 @@ func (s *balanceService) Get(ctx context.Context, userID uint64, abbr string) (s
 
 	// //
 
-	money := decimal.NewFromInt(balance)
-	money.Shift(-2) // 100 -> 1.00 (because money is stored in cents)
+	money := decimal.NewFromInt(balance).Shift(-2) // 100 -> 1.00 (because money is stored in cents)
 
 	// exchange rate
 	if abbr != "" {

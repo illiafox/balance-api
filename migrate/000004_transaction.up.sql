@@ -14,4 +14,3 @@ CREATE TABLE IF NOT EXISTS public.transaction
 );
 
 CREATE INDEX IF NOT EXISTS transaction_to_id_idx ON transaction (to_id);
-CREATE INDEX IF NOT EXISTS transaction_from_id_idx ON transaction (from_id);
