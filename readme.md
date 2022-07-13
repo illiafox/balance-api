@@ -2,44 +2,52 @@
 
 [![](https://img.shields.io/badge/-Swagger%20Docs-informational?style=flat&logo=swagger&color=blue&labelColor=gray)](https://validator.swagger.io/?url=https://raw.githubusercontent.com/illiafox/balance-api/master/docs/swagger.yaml)
 
-## Requirements
+# REST API for ready User balance integration
 
-#### - Go: `1.18`
-
-#### - PostgreSQL: `14.2`
-
-#### - Redis: `6.2.6`
-
----
-
-## Features (contribution is welcome)
-
-- [x] Exchange rates
-- [x] Transfer money between users
-- [x] Block/Unblock balance
-- [x] Swagger API
-- [x] Pprof
+- [x] One-tap deployment with [docker-compose]()
+- [x] Exchange rates via [redis]()
+- [x] Swagger API documentation + Client generation
+- [x] Pprof, Prometheus metrics
+- [x] PostgreSQL
 - [ ] gRPC
-- [ ] Github Docs
 - [ ] Rewrite in Rust
 
 ---
 
 ## docker-compose
 
-API **starts immediately** after containers are up
+Service starts **immediately** after containers are up
 
 ```shell
-docker-compose up # make compose
+make compose # docker-compose up
 ```
 
-### Application endpoint `:8080`
+**Down** containers (volumes won't be destroyed)
 
-- ### Redis `:6380`
-  **Database** `0`
-- ### PostgreSQL `:5430`
-  **User** `postgres` **Password** `postgres` **Database** `balance_api`
+```shell
+make compose-down # docker-compose down
+```
 
+**Debug** build and run
+1) Generate swagger docs with [`swag`](https://github.com/swaggo/swag):
+```make swagger```
+2) Rebuild service image
+```shell
+make compose-debug 
+```
+
+## Application endpoints
+### Default port: `8080`
+- #### `/api/` - REST API
+- #### [`/swagger`](http://0.0.0.0:8080/swagger/) - [Swagger API](https://validator.swagger.io/?url=https://raw.githubusercontent.com/illiafox/balance-api/master/docs/swagger.yaml) documentation
+- #### [`/metrics`](http://0.0.0.0:8080/metrics/) - Prometheus metrics
+- #### [`/debug/pprof`](http://0.0.0.0:8080/metrics/) - pprof
+
+### Docker-compose
+- #### Redis `:6380` **Database** `0`
+- #### PostgreSQL `:5430`  **User/Password** `postgres` **Database** `balance_api`
+
+ 
 --- 
 
 ## Docs

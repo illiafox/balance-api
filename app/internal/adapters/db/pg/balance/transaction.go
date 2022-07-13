@@ -1,4 +1,4 @@
-package pg
+package balance
 
 import (
 	"context"
@@ -40,8 +40,10 @@ func (s *balanceStorage) GetTransactions(
 
 	// generate query
 	query, args, err := sq.Select("*").From("transaction").
-		Where("to_id = $1 OR from_id = $1", userID).
-		OrderBy(order).Limit(limit).Offset(offset).ToSql()
+		Where("to_id = $1", userID).
+		OrderBy(order).Limit(limit).Offset(offset).
+		ToSql()
+
 	if err != nil {
 		return nil, errors.NewInternal(err, "generate sql query")
 	}
@@ -52,7 +54,7 @@ func (s *balanceStorage) GetTransactions(
 	if err != nil {
 		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> no transactions
-			return []entity.Transaction{}, nil
+			return nil, nil
 		}
 
 		return nil, errors.NewInternal(err, "query: get transactions")
