@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"time"
 
 	"balance-service/app/internal/composites"
-	v1 "balance-service/app/internal/controller/http/v1"
+	api "balance-service/app/internal/controller/http"
 	_ "balance-service/docs"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
 )
 
 func (app *App) Handler() (http.Handler, error) {
@@ -43,16 +46,40 @@ func (app *App) Handler() (http.Handler, error) {
 	// // Routing
 
 	router := http.NewServeMux()
-	{
-		api := http.NewServeMux()
-		api.Handle("/v1/", http.StripPrefix("/v1", v1.New(app.logger.Named("api/v1"), balance)))
+
+	// API
+	router.Handle("/api/", http.StripPrefix("/api",
+		api.New(
+			app.logger.Named("api"),
+			app.cfg.Host.RequestTimout,
+			balance,
+		)),
+	)
+
+	// Swagger
+	if app.flags.swagger { // swagger
+		router.Handle("/swagger/", swagger.Handler())
 		//
-		router.Handle("/api/", http.StripPrefix("/api", api))
+		app.logger.Info("Swagger enabled", zap.String("endpoint", "/swagger"))
 	}
 
-	if !app.flags.noswag {
-		// swagger
-		router.Handle("/swagger/", swagger.Handler())
+	// pprof
+	if app.flags.pprof { // pprof
+		router.HandleFunc("/debug/pprof/", pprof.Index)
+		router.HandleFunc("/debug/pprof/heap", pprof.Index)
+		router.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		router.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		router.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		router.HandleFunc("/debug/pprof/trace", pprof.Trace)
+		//
+		app.logger.Info("Pprof enabled", zap.String("endpoint", "/debug/pprof"))
+	}
+
+	// prometheus
+	if app.flags.prom {
+		router.Handle("/metrics", promhttp.Handler())
+		//
+		app.logger.Info("Prometheus metrics enabled", zap.String("endpoint", "/metrics"))
 	}
 
 	return router, nil

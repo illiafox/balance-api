@@ -23,7 +23,7 @@ func NewRedisComposite(ctx context.Context, cfg config.Redis) (RedisComposite, e
 		hashMap: cfg.HashMap,
 	}
 
-	client, err := redis.New(ctx, cfg.Address, cfg.Pass, cfg.DB)
+	client, err := redis.New(ctx, fmt.Sprintf("%s:%d", cfg.IP, cfg.Port), cfg.Pass, cfg.DB)
 	if err != nil {
 		return composite, fmt.Errorf("create client: %w", err)
 	}

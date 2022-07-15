@@ -1,13 +1,14 @@
-package pg
+package balance
 
 import (
 	"context"
-	types "database/sql"
+	"database/sql"
 	"fmt"
-	"strconv"
+	"time"
 
 	"balance-service/app/internal/domain/entity"
 	"balance-service/app/pkg/errors"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -23,6 +24,7 @@ func (s *balanceStorage) GetTransactions(
 	userID, limit, offset int64,
 	sort entity.Sort,
 ) ([]entity.Transaction, error) {
+
 	// get ORDER BY clause
 	order, ok := sorts[sort]
 	if !ok {
@@ -36,14 +38,23 @@ func (s *balanceStorage) GetTransactions(
 	}
 	defer c.Release()
 
+	// generate query
+	query, args, err := sq.Select("*").From("transaction").
+		Where("to_id = $1", userID).
+		OrderBy(order).Limit(uint64(limit)).Offset(uint64(offset)).
+		ToSql()
+
+	if err != nil {
+		return nil, errors.NewInternal(err, "generate sql query")
+	}
+
 	// get transactions
-	rows, err := c.Query(ctx, "SELECT * FROM transaction WHERE to_id = $1 OR from_id = $1 ORDER BY $2 LIMIT $3 OFFSET $4",
-		userID, order, limit, offset)
+	rows, err := c.Query(ctx, query, args...)
 
 	if err != nil {
 		//nolint:errorlint
 		if err == pgx.ErrNoRows { // no rows -> no transactions
-			return []entity.Transaction{}, nil
+			return nil, nil
 		}
 
 		return nil, errors.NewInternal(err, "query: get transactions")
@@ -51,24 +62,37 @@ func (s *balanceStorage) GetTransactions(
 	defer rows.Close()
 
 	var (
-		trs  = make([]entity.Transaction, 0, 1)
-		tr   entity.Transaction
-		from types.NullInt64
+		trs = make([]entity.Transaction, 0, 1)
+		tr  entity.Transaction
+		// custom types
+		from sql.NullInt64
+		t    time.Time
 	)
 
 	for rows.Next() {
-		tr.FromID = nil // set 'null'
-
-		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &tr.Date, &tr.Description); err != nil {
+		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &t, &tr.Description); err != nil {
 			return nil, errors.NewInternal(err, "scan row")
 		}
+		// // custom types
 
-		// if not null
+		// from id
 		if from.Valid {
-			tr.FromID = []byte(strconv.FormatInt(from.Int64, 10))
-		} // else json.RawMessage with 'null'
+			i := from.Int64
+			tr.FromID = &i
+		} else {
+			tr.FromID = nil
+		}
+
+		// time
+		tr.Date = t.Format(entity.TimeLayout)
+
+		// //
 
 		trs = append(trs, tr)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.NewInternal(err, "rows")
 	}
 
 	return trs, nil

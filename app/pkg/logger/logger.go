@@ -16,6 +16,8 @@ type Logger interface {
 	Warn(msg string, fields ...zap.Field)
 	Error(msg string, fields ...zap.Field)
 	Named(s string) *zap.Logger
+	//
+	With(fields ...zap.Field) *zap.Logger
 }
 
 type Zap struct {

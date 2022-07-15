@@ -15,10 +15,7 @@ func NewBalanceComposite(pgComposite PgComposite, redisComposite RedisComposite)
 	balanceStorage := pg.NewBalanceStorage(pgComposite.pool)
 	currencyStorage := redis.NewCurrencyStorage(redisComposite.client, redisComposite.hashMap)
 	//
-	balanceService := service.NewBalanceService(balanceStorage, currencyStorage)
-	//
-
 	return &BalanceComposite{
-		balanceService,
+		service.NewBalanceService(balanceStorage, currencyStorage),
 	}, nil
 }

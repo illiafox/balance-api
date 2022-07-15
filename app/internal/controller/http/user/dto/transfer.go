@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/gookit/validate"
+import (
+	"balance-service/app/internal/controller/http/httputils"
+	"github.com/gookit/validate"
+)
 
 type TransferBalanceIN struct {
 	ToID        int64  `json:"to_id"       validate:"required|gt:0"`
@@ -17,4 +20,6 @@ func (t TransferBalanceIN) Validate() error {
 	return nil
 }
 
-type TransferBalanceOUT Status
+// //
+
+type TransferBalanceOUT httputils.Status

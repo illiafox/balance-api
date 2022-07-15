@@ -1,11 +1,17 @@
 package dto
 
-import "fmt"
+import (
+	"fmt"
+
+	"balance-service/app/internal/controller/http/httputils"
+)
 
 type UnblockIN struct {
 	UserID int64 `json:"user_id"`
 }
-type UnblockOUT Status
+type UnblockOUT httputils.Status
+
+//
 
 func (g UnblockIN) Validate() error {
 	if g.UserID <= 0 {
@@ -28,4 +34,4 @@ func (b BlockIN) Validate() error {
 	return b.UnblockIN.Validate()
 }
 
-type BlockOUT Status
+type BlockOUT httputils.Status

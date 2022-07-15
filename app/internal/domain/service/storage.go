@@ -11,7 +11,7 @@ type BalanceStorage interface {
 	// Balance
 
 	GetBalance(ctx context.Context, userID int64) (balance int64, err error)
-	ChangeBalance(ctx context.Context, userID, amount int64, desc string) error
+	ChangeBalance(ctx context.Context, userID int64, amount int64, desc string) error
 
 	Transfer(ctx context.Context, fromUserID, towUserID, amount int64, desc string) error
 

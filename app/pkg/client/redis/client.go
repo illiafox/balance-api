@@ -17,7 +17,8 @@ func New(ctx context.Context, address string, pass string, db int) (*redis.Clien
 
 	client := redis.NewClient(options)
 
-	if err := client.WithContext(ctx).Ping().Err(); err != nil {
+	if err := client.WithContext(ctx).
+		Ping().Err(); err != nil {
 		return nil, fmt.Errorf("ping: %w", err)
 	}
 

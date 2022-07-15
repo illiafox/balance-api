@@ -18,21 +18,23 @@ func (app *App) Listen() {
 	if err != nil {
 		app.logger.Error("create handler", zap.Error(err))
 
-		app.closers.Close()
+		app.closers.Close(app.logger)
 		os.Exit(1)
 	}
-	defer app.closers.Close()
+	defer app.closers.Close(app.logger)
 
 	// //
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%s:%d", app.cfg.Host.Addr, app.cfg.Host.Port),
 		//
-		WriteTimeout: time.Second * 3,
-		ReadTimeout:  time.Second * 3,
-		IdleTimeout:  time.Second * 15,
-		//
 		Handler: handler,
+	}
+
+	if !app.flags.pprof {
+		srv.WriteTimeout = time.Second * 3
+		srv.ReadTimeout = time.Second * 3
+		srv.IdleTimeout = time.Second * 15
 	}
 
 	// //
