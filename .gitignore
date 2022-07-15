@@ -7,3 +7,6 @@ app/cmd/api/*.toml
 
 # log files
 !app/cmd/api/config.toml
+
+# allure results
+tests/allure-results

@@ -6,7 +6,7 @@ import (
 )
 
 type ChangeBalanceIN struct {
-	UserID      uint64 `json:"user_id"     validate:"required|gt:0"`
+	UserID      int64  `json:"user_id"     validate:"required|gt:0"`
 	Amount      int64  `json:"change"      validate:"required|ne:1"`
 	Description string `json:"description" validate:"required"` // |min_len:10
 }
@@ -18,5 +18,7 @@ func (c ChangeBalanceIN) Validate() error {
 
 	return nil
 }
+
+// //
 
 type ChangeBalanceOUT httputils.Status

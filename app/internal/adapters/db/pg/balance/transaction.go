@@ -21,7 +21,7 @@ var sorts = map[entity.Sort]string{
 
 func (s *balanceStorage) GetTransactions(
 	ctx context.Context,
-	userID, limit, offset uint64,
+	userID, limit, offset int64,
 	sort entity.Sort,
 ) ([]entity.Transaction, error) {
 
@@ -41,7 +41,7 @@ func (s *balanceStorage) GetTransactions(
 	// generate query
 	query, args, err := sq.Select("*").From("transaction").
 		Where("to_id = $1", userID).
-		OrderBy(order).Limit(limit).Offset(offset).
+		OrderBy(order).Limit(uint64(limit)).Offset(uint64(offset)).
 		ToSql()
 
 	if err != nil {
@@ -65,18 +65,29 @@ func (s *balanceStorage) GetTransactions(
 		trs = make([]entity.Transaction, 0, 1)
 		tr  entity.Transaction
 		// custom types
-		t    time.Time
 		from sql.NullInt64
+		t    time.Time
 	)
 
 	for rows.Next() {
 		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &t, &tr.Description); err != nil {
 			return nil, errors.NewInternal(err, "scan row")
 		}
-		//
-		tr.FromID = from.Int64
-		tr.Date = entity.Time(t)
-		//
+		// // custom types
+
+		// from id
+		if from.Valid {
+			i := from.Int64
+			tr.FromID = &i
+		} else {
+			tr.FromID = nil
+		}
+
+		// time
+		tr.Date = t.Format(entity.TimeLayout)
+
+		// //
+
 		trs = append(trs, tr)
 	}
 

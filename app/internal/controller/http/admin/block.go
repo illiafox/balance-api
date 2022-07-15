@@ -51,7 +51,7 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("block balance",
-				zap.Error(err), zap.Uint64("user_id", block.UserID),
+				zap.Error(err), zap.Int64("user_id", block.UserID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
@@ -113,7 +113,7 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("unblock balance",
-				zap.Error(err), zap.Uint64("user_id", unblock.UserID),
+				zap.Error(err), zap.Int64("user_id", unblock.UserID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {

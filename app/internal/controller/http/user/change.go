@@ -52,7 +52,7 @@ func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("change balance",
 				zap.Error(err),
-				zap.Uint64("user_id", change.UserID),
+				zap.Int64("user_id", change.UserID),
 				zap.Int64("amount", change.Amount),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
