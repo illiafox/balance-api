@@ -10,19 +10,19 @@ import (
 type BalanceStorage interface {
 	// Balance
 
-	GetBalance(ctx context.Context, userID uint64) (balance int64, err error)
-	ChangeBalance(ctx context.Context, userID uint64, amount int64, desc string) error
+	GetBalance(ctx context.Context, userID int64) (balance int64, err error)
+	ChangeBalance(ctx context.Context, userID int64, amount int64, desc string) error
 
-	Transfer(ctx context.Context, fromUserID, towUserID, amount uint64, desc string) error
+	Transfer(ctx context.Context, fromUserID, towUserID, amount int64, desc string) error
 
-	BlockBalance(ctx context.Context, userID uint64, reason string) (err error)
-	UnblockBalance(ctx context.Context, userID uint64) (err error)
+	BlockBalance(ctx context.Context, userID int64, reason string) (err error)
+	UnblockBalance(ctx context.Context, userID int64) (err error)
 
 	// Transaction
 
 	GetTransactions(
 		ctx context.Context,
-		userID, limit, offset uint64,
+		userID, limit, offset int64,
 		sort entity.Sort,
 	) ([]entity.Transaction, error)
 }

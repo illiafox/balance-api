@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (s balanceStorage) GetBalance(ctx context.Context, userID uint64) (balance int64, err error) {
+func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance int64, err error) {
 	// pool.QueryRow() acquires and releases connection automatically
 	err = s.pool.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1",
 		userID,
@@ -25,7 +25,7 @@ func (s balanceStorage) GetBalance(ctx context.Context, userID uint64) (balance 
 	return
 }
 
-func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID uint64) (balance uint64, err error) {
+func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID int64) (balance int64, err error) {
 
 	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE",
 		userID,

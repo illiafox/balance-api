@@ -7,12 +7,12 @@ import (
 )
 
 type Service interface {
-	Get(ctx context.Context, userID uint64, abbr string) (string, error)
-	Change(ctx context.Context, userID uint64, amount int64, desc string) error
-	Transfer(ctx context.Context, fromID, toID, amount uint64, desc string) error
+	Get(ctx context.Context, userID int64, abbr string) (string, error)
+	Change(ctx context.Context, userID int64, amount int64, desc string) error
+	Transfer(ctx context.Context, fromID, toID, amount int64, desc string) error
 
-	GetTransactions(ctx context.Context, userID, limit, offset uint64, sort string) ([]entity.Transaction, error)
+	GetTransactions(ctx context.Context, userID, limit, offset int64, sort string) ([]entity.Transaction, error)
 
-	BlockBalance(ctx context.Context, userID uint64, reason string) (err error)
-	UnblockBalance(ctx context.Context, userID uint64) (err error)
+	BlockBalance(ctx context.Context, userID int64, reason string) (err error)
+	UnblockBalance(ctx context.Context, userID int64) (err error)
 }

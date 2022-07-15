@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS public.transaction
     from_id        BIGINT,
     --
     action         INTEGER                  NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL
-        DEFAULT (now() at time zone 'utc'),
+    created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     --
     description    TEXT                     NOT NULL
 );

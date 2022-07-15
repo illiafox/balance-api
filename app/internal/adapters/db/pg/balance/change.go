@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (s balanceStorage) ChangeBalance(ctx context.Context, userID uint64, amount int64, description string) (err error) {
+func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount int64, description string) (err error) {
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
@@ -63,7 +63,7 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID uint64, amount
 		}
 
 		// update existing balance
-		if err = s.updateBalance(ctx, tx, userID, uint64(balance)); err != nil {
+		if err = s.updateBalance(ctx, tx, userID, int64(balance)); err != nil {
 			return err
 		}
 	}
@@ -85,7 +85,7 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID uint64, amount
 	return
 }
 
-func (balanceStorage) updateBalance(ctx context.Context, tx pgx.Tx, userID uint64, balance uint64) (err error) {
+func (balanceStorage) updateBalance(ctx context.Context, tx pgx.Tx, userID int64, balance int64) (err error) {
 	_, err = tx.Exec(ctx, "UPDATE balance SET balance = $1 WHERE user_id = $2",
 		balance, userID,
 	)

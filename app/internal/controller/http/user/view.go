@@ -47,7 +47,7 @@ func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps ht
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("get transactions",
 				zap.Error(err),
-				zap.Uint64("user_id", view.UserID),
+				zap.Int64("user_id", view.UserID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
