@@ -51,9 +51,9 @@ func (h *handler) TransferBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("transfer balance",
-				zap.Error(err), zap.Uint64("amount", transfer.Amount),
-				zap.Uint64("from_id", transfer.FromID),
-				zap.Uint64("to_id", transfer.ToID),
+				zap.Error(err), zap.Int64("amount", transfer.Amount),
+				zap.Int64("from_id", transfer.FromID),
+				zap.Int64("to_id", transfer.ToID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {

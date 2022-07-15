@@ -18,7 +18,7 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 	// console
 	pe.EncodeCaller = func(caller zapcore.EntryCaller, encoder zapcore.PrimitiveArrayEncoder) {
 		encoder.AppendString(caller.TrimmedPath())
-		encoder.AppendString("|")
+		encoder.AppendString("\t|")
 	}
 	//
 	pe.EncodeTime = zapcore.TimeEncoderOfLayout("02/01 15:04:05") // "02/01/2006 15:04:05 |"
@@ -33,6 +33,7 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 		enc.AppendString(l.CapitalString())
 		enc.AppendString("|")
 	}
+
 	//
 	consoleEncoder := zapcore.NewConsoleEncoder(pe)
 	// //

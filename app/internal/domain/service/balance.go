@@ -7,7 +7,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (s *balanceService) Get(ctx context.Context, userID uint64, abbr string) (string, error) {
+func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (string, error) {
 
 	// get balance
 	balance, err := s.balance.GetBalance(ctx, userID)
@@ -41,20 +41,20 @@ func (s *balanceService) Get(ctx context.Context, userID uint64, abbr string) (s
 	return money.StringFixed(2), nil
 }
 
-func (s *balanceService) Change(ctx context.Context, userID uint64, amount int64, desc string) error {
+func (s *balanceService) Change(ctx context.Context, userID int64, amount int64, desc string) error {
 	return s.balance.ChangeBalance(ctx, userID, amount, desc)
 }
 
-func (s *balanceService) Transfer(ctx context.Context, fromID, toID, amount uint64, desc string) error {
+func (s *balanceService) Transfer(ctx context.Context, fromID, toID, amount int64, desc string) error {
 	return s.balance.Transfer(ctx, fromID, toID, amount, desc)
 }
 
 // //
 
-func (s *balanceService) BlockBalance(ctx context.Context, userID uint64, reason string) error {
+func (s *balanceService) BlockBalance(ctx context.Context, userID int64, reason string) error {
 	return s.balance.BlockBalance(ctx, userID, reason)
 }
 
-func (s *balanceService) UnblockBalance(ctx context.Context, userID uint64) error {
+func (s *balanceService) UnblockBalance(ctx context.Context, userID int64) error {
 	return s.balance.UnblockBalance(ctx, userID)
 }

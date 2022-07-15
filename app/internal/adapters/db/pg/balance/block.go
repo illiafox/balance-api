@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (s balanceStorage) BlockBalance(ctx context.Context, userID uint64, reason string) (err error) {
+func (s balanceStorage) BlockBalance(ctx context.Context, userID int64, reason string) (err error) {
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
@@ -67,7 +67,7 @@ func (s balanceStorage) BlockBalance(ctx context.Context, userID uint64, reason 
 	return
 }
 
-func (s balanceStorage) UnblockBalance(ctx context.Context, userID uint64) (err error) {
+func (s balanceStorage) UnblockBalance(ctx context.Context, userID int64) (err error) {
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
@@ -124,7 +124,7 @@ func (s balanceStorage) UnblockBalance(ctx context.Context, userID uint64) (err 
 	return
 }
 
-func (balanceStorage) userBlocked(ctx context.Context, tx pgx.Tx, userID uint64) error {
+func (balanceStorage) userBlocked(ctx context.Context, tx pgx.Tx, userID int64) error {
 	var (
 		reason string
 		date   time.Time

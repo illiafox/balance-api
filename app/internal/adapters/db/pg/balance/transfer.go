@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amount uint64, desc string) (err error) {
+func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) (err error) {
 
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
@@ -42,7 +42,7 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	}
 
 	//
-	var receiver uint64
+	var receiver int64
 	//
 
 	// get receiver balance
@@ -81,7 +81,7 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 		return err
 	}
 
-	record := func(ctx context.Context, tx pgx.Tx, fromUserID, toUserID uint64, amount int64, description string) error {
+	record := func(ctx context.Context, tx pgx.Tx, fromUserID, toUserID int64, amount int64, description string) error {
 		_, err := tx.Exec(ctx, `INSERT INTO transaction (from_id,to_id,action,description) VALUES ($1,$2,$3,$4)`,
 			fromUserID, toUserID, amount, description,
 		)
@@ -95,13 +95,13 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	// // create records
 
 	// deposit money to receiver
-	err = record(ctx, tx, fromUserID, toUserID, int64(amount), desc)
+	err = record(ctx, tx, fromUserID, toUserID, amount, desc)
 	if err != nil {
 		return err
 	}
 
 	// withdraw money from sender
-	err = record(ctx, tx, toUserID, fromUserID, -int64(amount), desc)
+	err = record(ctx, tx, toUserID, fromUserID, -amount, desc)
 	if err != nil {
 		return err
 	}

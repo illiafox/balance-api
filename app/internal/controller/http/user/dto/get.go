@@ -8,7 +8,7 @@ import (
 )
 
 type GetBalanceIN struct {
-	UserID uint64 `json:"user_id"`
+	UserID int64  `json:"user_id"`
 	Base   string `json:"base"`
 }
 
@@ -18,13 +18,13 @@ func NewGetBalanceIN(id, base string) (GetBalanceIN, error) {
 		Base: base,
 	}
 	// UserID
-	if get.UserID, err = strconv.ParseUint(id, 10, 64); err != nil {
+	if get.UserID, err = strconv.ParseInt(id, 10, 64); err != nil {
 		return get, fmt.Errorf("parse id: %w", err)
 	}
 	if get.UserID <= 0 {
 		return get, fmt.Errorf("id: expected > 0, got %d", get.UserID)
 	}
-	//
+
 	return get, nil
 }
 

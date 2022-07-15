@@ -7,7 +7,7 @@ import (
 )
 
 type UnblockIN struct {
-	UserID uint64 `json:"user_id"`
+	UserID int64 `json:"user_id"`
 }
 type UnblockOUT httputils.Status
 

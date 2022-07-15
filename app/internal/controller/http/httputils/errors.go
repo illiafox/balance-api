@@ -5,10 +5,6 @@ import (
 	"net/http"
 )
 
-type Status struct {
-	Ok bool `json:"ok"`
-}
-
 type Error struct {
 	Status
 	Message string `json:"err"`
