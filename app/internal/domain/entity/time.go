@@ -16,9 +16,12 @@ type Time struct {
 
 func (t Time) MarshalJSON() ([]byte, error) {
 	s := strconv.Quote(t.Format(TimeLayout))
+
 	ptr := unsafe.Pointer(&s)
 	slice := *(*[]byte)(ptr)
-	return slice[:(*reflect.SliceHeader)(ptr).Len], nil
+	l := (*reflect.SliceHeader)(ptr).Len
+
+	return /* cap and len must be equal */ slice[:l:l], nil
 }
 
 func (t *Time) UnmarshalJSON(data []byte) error {
