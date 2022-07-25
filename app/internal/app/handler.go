@@ -9,10 +9,10 @@ import (
 
 	"balance-service/app/internal/composites"
 	api "balance-service/app/internal/controller/http"
+	"balance-service/app/pkg/logger"
 	_ "balance-service/docs"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swagger "github.com/swaggo/http-swagger"
-	"go.uber.org/zap"
 )
 
 func (app *App) Handler() (http.Handler, error) {
@@ -60,7 +60,7 @@ func (app *App) Handler() (http.Handler, error) {
 	if app.flags.swagger { // swagger
 		router.Handle("/swagger/", swagger.Handler())
 		//
-		app.logger.Info("Swagger enabled", zap.String("endpoint", "/swagger"))
+		app.logger.Info("Swagger enabled", logger.String("endpoint", "/swagger"))
 	}
 
 	// pprof
@@ -72,14 +72,14 @@ func (app *App) Handler() (http.Handler, error) {
 		router.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		router.HandleFunc("/debug/pprof/trace", pprof.Trace)
 		//
-		app.logger.Info("Pprof enabled", zap.String("endpoint", "/debug/pprof"))
+		app.logger.Info("Pprof enabled", logger.String("endpoint", "/debug/pprof"))
 	}
 
 	// prometheus
 	if app.flags.prom {
 		router.Handle("/metrics", promhttp.Handler())
 		//
-		app.logger.Info("Prometheus metrics enabled", zap.String("endpoint", "/metrics"))
+		app.logger.Info("Prometheus metrics enabled", logger.String("endpoint", "/metrics"))
 	}
 
 	return router, nil

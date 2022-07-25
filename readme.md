@@ -166,7 +166,7 @@ HOST_PORT=8080
 #### SOME TEST WON'T PASS WITHOUT WORKING APPLICATION
 
 ```
-go test
+go test ./...
 ```
 
 #### Allure data: [`/tests/allure-results`](`/tests/allure-results`)

@@ -5,41 +5,12 @@ import (
 	"os"
 
 	zapcore "balance-service/app/pkg/logger/zap"
-	"go.uber.org/zap"
 )
 
 const separator = "\n\n"
 
-type Logger interface {
-	Debug(msg string, fields ...zap.Field)
-	Info(msg string, fields ...zap.Field)
-	Warn(msg string, fields ...zap.Field)
-	Error(msg string, fields ...zap.Field)
-	Named(s string) *zap.Logger
-	//
-	With(fields ...zap.Field) *zap.Logger
-}
-
-type Zap struct {
-	Logger *zap.Logger
-	file   *os.File
-}
-
-func (l Zap) Close() error {
-	_ = l.Logger.Sync()
-
-	if l.file != nil {
-		err := l.file.Close()
-		if err != nil {
-			return fmt.Errorf("close file: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func New(path string) (Zap, error) {
-	var logger Zap
+func New(path string) (Closer, error) {
+	var logger Closer
 
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {

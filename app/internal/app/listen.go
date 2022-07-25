@@ -10,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"go.uber.org/zap"
+	"balance-service/app/pkg/logger"
 )
 
 func (app *App) Listen() {
 	handler, err := app.Handler()
 	if err != nil {
-		app.logger.Error("create handler", zap.Error(err))
+		app.logger.Error("create handler", logger.Error(err))
 
 		app.closers.Close(app.logger)
 		os.Exit(1)
@@ -43,8 +43,8 @@ func (app *App) Listen() {
 
 	go func() {
 		app.logger.Info("Server started",
-			zap.String("address", srv.Addr),
-			zap.Bool("https", app.flags.https),
+			logger.String("address", srv.Addr),
+			logger.Bool("https", app.flags.https),
 		)
 
 		var err error
@@ -56,7 +56,7 @@ func (app *App) Listen() {
 		}
 
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			app.logger.Error("server", zap.Error(err))
+			app.logger.Error("server", logger.Error(err))
 		}
 
 		stop()
@@ -74,6 +74,6 @@ func (app *App) Listen() {
 	defer cancel()
 
 	if err = srv.Shutdown(ctx); err != nil {
-		app.logger.Error("shutdown", zap.Error(err))
+		app.logger.Error("shutdown", logger.Error(err))
 	}
 }
