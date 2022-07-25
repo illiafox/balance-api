@@ -9,7 +9,7 @@ import (
 	"balance-service/app/internal/controller/http/httputils"
 	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/pkg/errors"
-	"go.uber.org/zap"
+	"balance-service/app/pkg/logger"
 )
 
 // BlockBalance
@@ -51,7 +51,7 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("block balance",
-				zap.Error(err), zap.Int64("user_id", block.UserID),
+				logger.Error(err), logger.Int64("user_id", block.UserID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
@@ -68,7 +68,7 @@ func (h *handler) BlockBalance(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		middleware.GetLogger(ctx).Error("encode response",
-			zap.Error(err), zap.Any("response", out),
+			logger.Error(err), logger.Any("response", out),
 		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
@@ -113,7 +113,7 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("unblock balance",
-				zap.Error(err), zap.Int64("user_id", unblock.UserID),
+				logger.Error(err), logger.Int64("user_id", unblock.UserID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
@@ -130,7 +130,7 @@ func (h *handler) UnblockBalance(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		middleware.GetLogger(ctx).Error("encode response",
-			zap.Error(err), zap.Any("response", out),
+			logger.Error(err), logger.Any("response", out),
 		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}

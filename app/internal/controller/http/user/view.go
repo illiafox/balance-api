@@ -7,8 +7,8 @@ import (
 	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
+	"balance-service/app/pkg/logger"
 	"github.com/julienschmidt/httprouter"
-	"go.uber.org/zap"
 )
 
 // ViewTransactions
@@ -46,8 +46,8 @@ func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps ht
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("get transactions",
-				zap.Error(err),
-				zap.Int64("user_id", view.UserID),
+				logger.Error(err),
+				logger.Int64("user_id", view.UserID),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
@@ -67,7 +67,7 @@ func (h *handler) ViewTransactions(w http.ResponseWriter, r *http.Request, ps ht
 
 	if err != nil {
 		middleware.GetLogger(ctx).Error("encode response",
-			zap.Error(err), zap.Any("response", out),
+			logger.Error(err), logger.Any("response", out),
 		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}

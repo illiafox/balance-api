@@ -38,11 +38,22 @@ func (s *balanceStorage) GetTransactions(
 	}
 	defer c.Release()
 
-	// generate query
-	query, args, err := sq.Select("*").From("transaction").
+	// // generate query
+	query, args, err := sq.
+		Select(
+			"transaction_id",
+			"to_id",
+			"from_id",
+			"action",
+			"created_at",
+			"description",
+		).
+		From("transaction").
 		Where("to_id = $1", userID).
 		OrderBy(order).Limit(uint64(limit)).Offset(uint64(offset)).
 		ToSql()
+
+	// //
 
 	if err != nil {
 		return nil, errors.NewInternal(err, "generate sql query")
@@ -84,7 +95,7 @@ func (s *balanceStorage) GetTransactions(
 		}
 
 		// time
-		tr.Date = t.Format(entity.TimeLayout)
+		tr.Date = entity.Time{Time: t}
 
 		// //
 
