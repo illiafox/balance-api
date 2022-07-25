@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"balance-service/app/pkg/logger"
-	"go.uber.org/zap"
 )
 
 type Middleware struct {
@@ -17,7 +16,7 @@ type Middleware struct {
 func (m Middleware) Use(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// logger
-		ctx := WithLogger(r.Context(), m.l.With(zap.String("endpoint", r.URL.Path)))
+		ctx := WithLogger(r.Context(), m.l.With(logger.String("endpoint", r.URL.Path)))
 		// timeout
 		ctx, cancel := context.WithTimeout(ctx, m.t)
 		defer cancel()

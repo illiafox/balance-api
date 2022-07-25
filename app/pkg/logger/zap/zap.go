@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
+func NewLogger(console io.Writer, files ...io.Writer) Logger {
 	pe := zap.NewProductionEncoderConfig()
 
 	// file
@@ -54,8 +54,8 @@ func NewLogger(console io.Writer, files ...io.Writer) *zap.Logger {
 	}
 
 	//
-	return zap.New(
+	return Logger{zap.New(
 		zapcore.NewTee(cores...),
 		zap.AddCaller(),
-	)
+	)}
 }

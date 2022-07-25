@@ -7,8 +7,8 @@ import (
 	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
+	"balance-service/app/pkg/logger"
 	"github.com/julienschmidt/httprouter"
-	"go.uber.org/zap"
 )
 
 // GetBalance
@@ -62,8 +62,8 @@ func (h *handler) GetBalance(w http.ResponseWriter, r *http.Request, ps httprout
 
 	if err != nil {
 		middleware.GetLogger(ctx).Error("encode response",
-			zap.Error(err),
-			zap.Any("response", out),
+			logger.Error(err),
+			logger.Any("response", out),
 		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}

@@ -9,7 +9,7 @@ import (
 	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
-	"go.uber.org/zap"
+	"balance-service/app/pkg/logger"
 )
 
 // ChangeBalance
@@ -51,9 +51,9 @@ func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if internal, ok := errors.ToInternal(err); ok {
 			middleware.GetLogger(ctx).Error("change balance",
-				zap.Error(err),
-				zap.Int64("user_id", change.UserID),
-				zap.Int64("amount", change.Amount),
+				logger.Error(err),
+				logger.Int64("user_id", change.UserID),
+				logger.Int64("amount", change.Amount),
 			)
 			_ = httputils.NewError(w, http.StatusInternalServerError, internal)
 		} else {
@@ -70,7 +70,7 @@ func (h *handler) ChangeBalance(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		middleware.GetLogger(ctx).Error("encode response",
-			zap.Error(err), zap.Any("response", out),
+			logger.Error(err), logger.Any("response", out),
 		)
 		_ = httputils.NewError(w, http.StatusInternalServerError, err)
 	}
