@@ -2,10 +2,10 @@ package entity
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	"time"
-	"unsafe"
+
+	"balance-service/app/pkg/unsafe"
 )
 
 const TimeLayout = time.RFC850
@@ -17,15 +17,11 @@ type Time struct {
 func (t Time) MarshalJSON() ([]byte, error) {
 	s := strconv.Quote(t.Format(TimeLayout))
 
-	ptr := unsafe.Pointer(&s)
-	slice := *(*[]byte)(ptr)
-	l := (*reflect.SliceHeader)(ptr).Len
-
-	return /* cap and len must be equal */ slice[:l:l], nil
+	return unsafe.StringToBytes(&s), nil
 }
 
 func (t *Time) UnmarshalJSON(data []byte) error {
-	s := *(*string)(unsafe.Pointer(&data))
+	s := unsafe.BytesToString(data)
 
 	// unquote data: "time" -> time
 	var err error
