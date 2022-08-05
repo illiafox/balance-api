@@ -2,7 +2,7 @@ package pg
 
 import (
 	"balance-service/app/internal/adapters/db/pg/balance"
-	"balance-service/app/internal/domain/service"
+	service "balance-service/app/internal/domain/service/balance"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 

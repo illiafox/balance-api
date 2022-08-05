@@ -4,41 +4,28 @@ import (
 	"context"
 	"fmt"
 
-	"balance-service/app/pkg/errors"
+	app_errors "balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
+	"github.com/shopspring/decimal"
 )
 
-func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (balance int64, err error) {
+func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (d decimal.Decimal, err error) {
 	// pool.QueryRow() acquires and releases connection automatically
+	var balance int64
+
 	err = s.pool.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1",
 		userID,
 	).Scan(&balance)
 
 	if err != nil {
 		if err == pgx.ErrNoRows { // no rows -> balance not found
-			return -1, fmt.Errorf("balance with user id %d not found", userID)
+			return d, fmt.Errorf("balance with user id %d not found", userID)
 		}
 
-		return -1, errors.NewInternal(err, "query: get balance")
+		return d, app_errors.NewInternal(err, "query: get balance")
 	}
 
-	return
-}
-
-func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID int64) (balance int64, err error) {
-
-	err = tx.QueryRow(ctx, "SELECT balance FROM balance WHERE user_id = $1 FOR UPDATE",
-		userID,
-	).Scan(&balance)
-
-	if err != nil {
-		//nolint:errorlint
-		if err == pgx.ErrNoRows { // no rows -> balance not found
-			return 0, fmt.Errorf("balance with user id %d not found", userID)
-		}
-
-		return 0, errors.NewInternal(err, "query: get balance for update")
-	}
+	d = decimal.New(balance, 1).Shift(2) // shift 2 decimal places (100 -> 0.01)
 
 	return
 }

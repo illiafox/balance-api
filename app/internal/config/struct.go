@@ -10,6 +10,8 @@ type Redis struct {
 	//
 	IP   string `env:"REDIS_IP"   env-default:"0.0.0.0"`
 	Port int    `env:"REDIS_PORT" env-default:"6379"`
+	//
+	Expire time.Duration `env:"REDIS_EXPIRE" env-default:"15m"`
 }
 
 type Postgres struct {

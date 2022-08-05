@@ -5,9 +5,14 @@ import (
 	"unsafe"
 )
 
-func StringToBytes(s *string) []byte {
-	ptr := unsafe.Pointer(s)
-	slice := *(*[]byte)(ptr)
-	l := (*reflect.StringHeader)(ptr).Len
-	return slice[:l:l]
+//go:nosplit
+func StringToBytes(s *string) (b []byte) {
+	str := (*reflect.StringHeader)(unsafe.Pointer(s))
+	slice := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+
+	slice.Data = str.Data
+	slice.Len = str.Len
+	slice.Cap = str.Len
+
+	return
 }
