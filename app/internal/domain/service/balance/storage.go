@@ -1,4 +1,4 @@
-package service
+package balance
 
 import (
 	"context"
@@ -10,10 +10,10 @@ import (
 type BalanceStorage interface {
 	// Balance
 
-	GetBalance(ctx context.Context, userID int64) (balance int64, err error)
+	GetBalance(ctx context.Context, userID int64) (decimal decimal.Decimal, err error)
 	ChangeBalance(ctx context.Context, userID int64, amount int64, desc string) error
 
-	Transfer(ctx context.Context, fromUserID, towUserID, amount int64, desc string) error
+	Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) error
 
 	BlockBalance(ctx context.Context, userID int64, reason string) (err error)
 	UnblockBalance(ctx context.Context, userID int64) (err error)

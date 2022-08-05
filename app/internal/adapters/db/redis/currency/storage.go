@@ -1,7 +1,7 @@
 package currency
 
 import (
-	"balance-service/app/internal/domain/service"
+	"balance-service/app/internal/domain/service/balance"
 	"github.com/go-redis/redis"
 )
 
@@ -10,6 +10,6 @@ type currencyStorage struct {
 	client *redis.Client
 }
 
-func NewStorage(client *redis.Client, name string) service.CurrencyStorage {
+func NewStorage(client *redis.Client, name string) balance.CurrencyStorage {
 	return &currencyStorage{name: name, client: client}
 }

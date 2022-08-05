@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"balance-service/app/pkg/errors"
+	app_errors "balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
 	"github.com/shopspring/decimal"
 )
@@ -13,14 +13,14 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
-		return errors.NewInternal(err, "acquire connection")
+		return app_errors.NewInternal(err, "acquire connection")
 	}
 	defer c.Release()
 
 	// begin transaction
 	tx, err := c.Begin(ctx)
 	if err != nil {
-		return errors.NewInternal(err, "begin transaction")
+		return app_errors.NewInternal(err, "begin transaction")
 	}
 
 	defer func() { // defer rollback if error occurs
@@ -50,11 +50,11 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 			// create new balance
 			_, err = tx.Exec(ctx, "INSERT INTO balance (user_id,balance) VALUES ($1,$2)", userID, amount)
 			if err != nil {
-				return errors.NewInternal(err, "exec: create new balance")
+				return app_errors.NewInternal(err, "exec: create new balance")
 			}
 
 		} else { // internal error
-			return errors.NewInternal(err, "query: get balance for update")
+			return app_errors.NewInternal(err, "query: get balance for update")
 		}
 	} else { // if balance found
 		balance += amount
@@ -73,26 +73,14 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 		userID, amount, description,
 	)
 	if err != nil {
-		return errors.NewInternal(err, "exec: create record")
+		return app_errors.NewInternal(err, "exec: create record")
 	}
 
 	// commit transaction
 	err = tx.Commit(ctx)
 	if err != nil {
-		return errors.NewInternal(err, "commit transaction")
+		return app_errors.NewInternal(err, "commit transaction")
 	}
 
 	return
-}
-
-func (balanceStorage) updateBalance(ctx context.Context, tx pgx.Tx, userID int64, balance int64) (err error) {
-	_, err = tx.Exec(ctx, "UPDATE balance SET balance = $1 WHERE user_id = $2",
-		balance, userID,
-	)
-
-	if err != nil {
-		return errors.NewInternal(err, "exec: update balance")
-	}
-
-	return nil
 }

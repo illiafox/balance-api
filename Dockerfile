@@ -6,7 +6,7 @@ WORKDIR /build/app/cmd/api
 
 RUN go mod tidy
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s -w -extldflags "-static"' -o=balance
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-s -w -extldflags "-static"' -o=balance
 
 ### final stage
 # why not scratch? We need bash to connect to the conteiner

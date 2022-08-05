@@ -12,6 +12,7 @@ import (
 type RedisComposite struct {
 	hashMap string
 	client  *rdb.Client
+	cfg     config.Redis
 }
 
 func (r RedisComposite) Close() error {
@@ -21,6 +22,7 @@ func (r RedisComposite) Close() error {
 func NewRedisComposite(ctx context.Context, cfg config.Redis) (RedisComposite, error) {
 	var composite = RedisComposite{
 		hashMap: cfg.HashMap,
+		cfg:     cfg,
 	}
 
 	client, err := redis.New(ctx, fmt.Sprintf("%s:%d", cfg.IP, cfg.Port), cfg.Pass, cfg.DB)
