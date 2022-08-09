@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -16,12 +16,12 @@ func (c cacheStorage) UpdateBalance(ctx context.Context, userID int64, d decimal
 
 	data, err := json.Marshal(d) // decimal.Decimal has marshal method
 	if err != nil {
-		return app_errors.NewInternal(err, "marshal decimal")
+		return apperrors.NewInternal(err, "marshal decimal")
 	}
 
 	err = client.Set(id, data, c.expire).Err()
 	if err != nil {
-		return app_errors.NewInternal(err, "redis.Set")
+		return apperrors.NewInternal(err, "redis.Set")
 	}
 
 	return nil

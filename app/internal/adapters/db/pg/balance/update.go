@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -21,7 +21,7 @@ func (balanceStorage) getBalanceForUpdate(ctx context.Context, tx pgx.Tx, userID
 			return 0, fmt.Errorf("balance with user id %d not found", userID)
 		}
 
-		return 0, app_errors.NewInternal(err, "query: get balance for update")
+		return 0, apperrors.NewInternal(err, "query: get balance for update")
 	}
 
 	return
@@ -33,7 +33,7 @@ func (balanceStorage) updateBalance(ctx context.Context, tx pgx.Tx, userID int64
 	)
 
 	if err != nil {
-		return app_errors.NewInternal(err, "exec: update balance")
+		return apperrors.NewInternal(err, "exec: update balance")
 	}
 
 	return nil

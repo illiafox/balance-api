@@ -3,7 +3,7 @@ package balance
 import (
 	"context"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	"github.com/pkg/errors"
 )
 
@@ -12,11 +12,11 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 	// get balance
 	money, err := s.balance.GetBalance(ctx, userID)
 	if err != nil {
-		if internal, ok := app_errors.ToInternal(err); ok {
+		if internal, ok := apperrors.ToInternal(err); ok {
 			return "", internal.Wrap("get balance")
 		}
 
-		return "", app_errors.Wrap(err, "get balance")
+		return "", apperrors.Wrap(err, "get balance")
 	}
 
 	// //
@@ -26,7 +26,7 @@ func (s *balanceService) Get(ctx context.Context, userID int64, abbr string) (st
 		// get currency
 		c, err := s.currency.Get(ctx, abbr)
 		if err != nil {
-			if internal, ok := app_errors.ToInternal(err); ok {
+			if internal, ok := apperrors.ToInternal(err); ok {
 				return "", internal.Wrap("get currency")
 			}
 			return "", errors.Wrap(err, "get currency")

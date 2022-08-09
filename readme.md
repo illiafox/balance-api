@@ -6,6 +6,7 @@
 
 - [x] One-tap deployment with [docker-compose](#deployment)
 - [x] Exchange rates via [redis]()
+- [x] Fast Caching 
 - [x] Swagger API documentation + Client generation
 - [x] Pprof, Prometheus metrics
 - [x] PostgreSQL

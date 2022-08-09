@@ -4,40 +4,34 @@ import (
 	"context"
 	"fmt"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
 func (c cacheService) GetBalance(ctx context.Context, userID int64) (d decimal.Decimal, err error) {
 	dec, err := c.cache.GetBalance(ctx, userID)
 	if err != nil {
-		if internal, ok := app_errors.ToInternal(err); ok {
-			return d, internal.Wrap("cache")
+		if internal, ok := apperrors.ToInternal(err); ok {
+			return decimal.Decimal{}, internal.Wrap("cache")
 		}
 
-		return d, fmt.Errorf("cache: %w", err)
-	}
+		if err == ErrBalanceNotFound {
+			dec, err = c.balance.GetBalance(ctx, userID)
 
-	if dec != nil {
-		return *dec, nil
-	}
+			if err == nil {
+				err = c.cache.UpdateBalance(ctx, userID, dec)
+				if err != nil {
+					if internal, ok := apperrors.ToInternal(err); ok {
+						return decimal.Decimal{}, internal.Wrap("cache")
+					}
 
-	// TODO: remove
-	fmt.Println("DB CALL")
-
-	d, err = c.balance.GetBalance(ctx, userID)
-
-	if err == nil {
-		err = c.cache.UpdateBalance(ctx, userID, d)
-		if err != nil {
-			if internal, ok := app_errors.ToInternal(err); ok {
-				return d, internal.Wrap("cache")
+					return decimal.Decimal{}, fmt.Errorf("update balance: %w", err)
+				}
 			}
-
-			return d, fmt.Errorf("update balance: %w", err)
 		}
+
+		return decimal.Decimal{}, fmt.Errorf("cache: %w", err)
 	}
 
-	return
-
+	return dec, nil
 }

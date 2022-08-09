@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -13,14 +13,14 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
-		return app_errors.NewInternal(err, "acquire connection")
+		return apperrors.NewInternal(err, "acquire connection")
 	}
 	defer c.Release()
 
 	// begin transaction
 	tx, err := c.Begin(ctx)
 	if err != nil {
-		return app_errors.NewInternal(err, "begin transaction")
+		return apperrors.NewInternal(err, "begin transaction")
 	}
 
 	defer func() { // defer rollback if error occurs
@@ -63,10 +63,10 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 			)
 
 			if err != nil {
-				return app_errors.NewInternal(err, "exec: create new balance")
+				return apperrors.NewInternal(err, "exec: create new balance")
 			}
 		} else { // internal error
-			return app_errors.NewInternal(err, "query: get receiver balance for update")
+			return apperrors.NewInternal(err, "query: get receiver balance for update")
 		}
 	} else {
 		// update receiver balance
@@ -86,7 +86,7 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 			fromUserID, toUserID, amount, description,
 		)
 		if err != nil {
-			return app_errors.NewInternal(err, "exec: create record")
+			return apperrors.NewInternal(err, "exec: create record")
 		}
 
 		return nil
@@ -109,7 +109,7 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 	// // commit transaction
 	err = tx.Commit(ctx)
 	if err != nil {
-		return app_errors.NewInternal(err, "commit transaction")
+		return apperrors.NewInternal(err, "commit transaction")
 	}
 
 	return

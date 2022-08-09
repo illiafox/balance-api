@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 )
 
 var ErrNoID = errors.New("no id")
@@ -16,7 +16,7 @@ func (c cacheStorage) DeleteBalance(ctx context.Context, ids ...int64) (err erro
 	switch len(ids) {
 
 	case 0:
-		return app_errors.NewInternal(ErrNoID, "arguments")
+		return apperrors.NewInternal(ErrNoID, "arguments")
 	case 1:
 		err = client.Del(
 			strconv.FormatInt(ids[0], 10),
@@ -35,7 +35,7 @@ func (c cacheStorage) DeleteBalance(ctx context.Context, ids ...int64) (err erro
 	}
 
 	if err != nil {
-		return app_errors.NewInternal(nil, "redis.Del")
+		return apperrors.NewInternal(nil, "redis.Del")
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -21,7 +22,9 @@ func (m Middleware) Use(handler http.Handler) http.Handler {
 		ctx, cancel := context.WithTimeout(ctx, m.t)
 		defer cancel()
 		//
+		t := time.Now()
 		handler.ServeHTTP(w, r.WithContext(ctx))
+		fmt.Println(time.Since(t).String())
 	})
 }
 
