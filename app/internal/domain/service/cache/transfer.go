@@ -8,7 +8,7 @@ import (
 )
 
 func (c cacheService) Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) error {
-	err := c.cache.DeleteBalance(ctx, fromUserID, toUserID)
+	err := c.cache.DeleteCacheBalance(ctx, fromUserID, toUserID)
 	if err != nil {
 		if internal, ok := apperrors.ToInternal(err); ok {
 			return internal.Wrap("cache")

@@ -57,14 +57,13 @@ func (s balanceStorage) Transfer(ctx context.Context, fromUserID, toUserID, amou
 			if err = s.userBlocked(ctx, tx, toUserID); err != nil {
 				return err
 			}
-			// create new balance
-			_, err = tx.Exec(ctx, "INSERT INTO balance (user_id,balance) VALUES ($1,$2)",
-				toUserID, amount,
-			)
 
+			// create new balance
+			err = s.insertBalanceWithConflict(ctx, tx, toUserID, amount)
 			if err != nil {
-				return apperrors.NewInternal(err, "exec: create new balance")
+				return err
 			}
+
 		} else { // internal error
 			return apperrors.NewInternal(err, "query: get receiver balance for update")
 		}

@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (c cacheStorage) UpdateBalance(ctx context.Context, userID int64, d decimal.Decimal) error {
+func (c cacheStorage) UpdateCachedBalance(ctx context.Context, userID int64, d decimal.Decimal) error {
 	client := c.client.WithContext(ctx)
 
 	id := strconv.FormatInt(userID, 10)

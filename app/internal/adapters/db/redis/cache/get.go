@@ -11,7 +11,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (c cacheStorage) GetBalance(ctx context.Context, userID int64) (decimal.Decimal, error) {
+func (c cacheStorage) GetCachedBalance(ctx context.Context, userID int64) (decimal.Decimal, error) {
 	client := c.client.WithContext(ctx)
 
 	id := strconv.FormatInt(userID, 10)
