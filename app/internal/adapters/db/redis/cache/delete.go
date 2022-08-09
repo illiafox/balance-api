@@ -10,7 +10,7 @@ import (
 
 var ErrNoID = errors.New("no id")
 
-func (c cacheStorage) DeleteBalance(ctx context.Context, ids ...int64) (err error) {
+func (c cacheStorage) DeleteCacheBalance(ctx context.Context, ids ...int64) (err error) {
 	client := c.client.WithContext(ctx)
 
 	switch len(ids) {

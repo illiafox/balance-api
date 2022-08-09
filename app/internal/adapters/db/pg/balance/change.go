@@ -48,9 +48,9 @@ func (s balanceStorage) ChangeBalance(ctx context.Context, userID int64, amount 
 			}
 
 			// create new balance
-			_, err = tx.Exec(ctx, "INSERT INTO balance (user_id,balance) VALUES ($1,$2)", userID, amount)
+			err = s.insertBalanceWithConflict(ctx, tx, userID, amount)
 			if err != nil {
-				return apperrors.NewInternal(err, "exec: create new balance")
+				return err
 			}
 
 		} else { // internal error

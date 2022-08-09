@@ -6,11 +6,11 @@
 
 - [x] One-tap deployment with [docker-compose](#deployment)
 - [x] Exchange rates via [redis]()
-- [x] Fast Caching 
+- [x] Caching (will be extended in future releases) 
 - [x] Swagger API documentation + Client generation
 - [x] Pprof, Prometheus metrics
 - [x] PostgreSQL
-- [x] Tests integration with [Allure](https://www.allure.com/)
+- [ ] Tests (very soon)
 - [ ] gRPC
 - [ ] Rewritten in Rust
 

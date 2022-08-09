@@ -8,7 +8,7 @@ import (
 )
 
 func (c cacheService) BlockBalance(ctx context.Context, userID int64, reason string) error {
-	err := c.cache.DeleteBalance(ctx, userID)
+	err := c.cache.DeleteCacheBalance(ctx, userID)
 	if err != nil {
 		if internal, ok := apperrors.ToInternal(err); ok {
 			return internal.Wrap("cache")
@@ -21,7 +21,7 @@ func (c cacheService) BlockBalance(ctx context.Context, userID int64, reason str
 }
 
 func (c cacheService) UnblockBalance(ctx context.Context, userID int64) error {
-	err := c.cache.DeleteBalance(ctx, userID)
+	err := c.cache.DeleteCacheBalance(ctx, userID)
 	if err != nil {
 		if internal, ok := apperrors.ToInternal(err); ok {
 			return internal.Wrap("cache")

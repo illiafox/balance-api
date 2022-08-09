@@ -38,3 +38,16 @@ func (balanceStorage) updateBalance(ctx context.Context, tx pgx.Tx, userID int64
 
 	return nil
 }
+
+func (balanceStorage) insertBalanceWithConflict(ctx context.Context, tx pgx.Tx, userID int64, change int64) error {
+	query := `INSERT INTO balance (user_id,balance)
+VALUES ($1,$2)
+ON CONFLICT (user_id)
+DO UPDATE SET balance = balance.balance + $2`
+	_, err := tx.Exec(ctx, query, userID, change)
+	if err != nil {
+		return apperrors.NewInternal(err, "exec: insert balance")
+	}
+
+	return nil
+}
