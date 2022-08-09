@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	"github.com/jackc/pgx/v4"
 	"github.com/shopspring/decimal"
 )
@@ -22,7 +22,7 @@ func (s balanceStorage) GetBalance(ctx context.Context, userID int64) (d decimal
 			return d, fmt.Errorf("balance with user id %d not found", userID)
 		}
 
-		return d, app_errors.NewInternal(err, "query: get balance")
+		return d, apperrors.NewInternal(err, "query: get balance")
 	}
 
 	d = decimal.New(balance, 1).Shift(2) // shift 2 decimal places (100 -> 0.01)

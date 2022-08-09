@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 )
 
 func (c cacheService) Transfer(ctx context.Context, fromUserID, toUserID, amount int64, desc string) error {
 	err := c.cache.DeleteBalance(ctx, fromUserID, toUserID)
 	if err != nil {
-		if internal, ok := app_errors.ToInternal(err); ok {
+		if internal, ok := apperrors.ToInternal(err); ok {
 			return internal.Wrap("cache")
 		}
 

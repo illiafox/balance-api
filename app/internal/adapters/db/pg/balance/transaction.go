@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"balance-service/app/internal/domain/entity"
-	app_errors "balance-service/app/pkg/errors"
+	apperrors "balance-service/app/pkg/errors"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 )
@@ -34,7 +34,7 @@ func (s *balanceStorage) GetTransactions(
 	// acquire connection
 	c, err := s.pool.Acquire(ctx)
 	if err != nil {
-		return nil, app_errors.NewInternal(err, "acquire connection")
+		return nil, apperrors.NewInternal(err, "acquire connection")
 	}
 	defer c.Release()
 
@@ -56,7 +56,7 @@ func (s *balanceStorage) GetTransactions(
 	// //
 
 	if err != nil {
-		return nil, app_errors.NewInternal(err, "generate sql query")
+		return nil, apperrors.NewInternal(err, "generate sql query")
 	}
 
 	// get transactions
@@ -68,7 +68,7 @@ func (s *balanceStorage) GetTransactions(
 			return nil, nil
 		}
 
-		return nil, app_errors.NewInternal(err, "query: get transactions")
+		return nil, apperrors.NewInternal(err, "query: get transactions")
 	}
 	defer rows.Close()
 
@@ -82,7 +82,7 @@ func (s *balanceStorage) GetTransactions(
 
 	for rows.Next() {
 		if err = rows.Scan(&tr.ID, &tr.ToID, &from, &tr.Action, &t, &tr.Description); err != nil {
-			return nil, app_errors.NewInternal(err, "scan row")
+			return nil, apperrors.NewInternal(err, "scan row")
 		}
 		// // custom types
 
@@ -103,7 +103,7 @@ func (s *balanceStorage) GetTransactions(
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, app_errors.NewInternal(err, "rows")
+		return nil, apperrors.NewInternal(err, "rows")
 	}
 
 	return trs, nil
