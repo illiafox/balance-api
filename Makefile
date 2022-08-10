@@ -4,11 +4,15 @@ export
 BUILD=./app/cmd/api
 
 .PHONY: all
-all: clean build run
+all: clean build build-run
 
 
 .PHONY: run
 run:
+	 go run $(BUILD)
+
+.PHONY: build-run
+build-run:
 	(cd $(BUILD) && ./app)
 
 

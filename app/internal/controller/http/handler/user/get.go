@@ -3,9 +3,9 @@ package user
 import (
 	"net/http"
 
+	"balance-service/app/internal/controller/http/handler/user/dto"
 	"balance-service/app/internal/controller/http/httputils"
 	"balance-service/app/internal/controller/http/middleware"
-	"balance-service/app/internal/controller/http/user/dto"
 	"balance-service/app/pkg/errors"
 	"balance-service/app/pkg/logger"
 	"github.com/julienschmidt/httprouter"

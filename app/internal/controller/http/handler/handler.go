@@ -1,13 +1,13 @@
-package http
+package handler
 
 import (
 	"net/http"
 	"time"
 
 	"balance-service/app/internal/adapters/api/balance"
-	"balance-service/app/internal/controller/http/admin"
+	"balance-service/app/internal/controller/http/handler/admin"
+	"balance-service/app/internal/controller/http/handler/user"
 	"balance-service/app/internal/controller/http/middleware"
-	"balance-service/app/internal/controller/http/user"
 	"balance-service/app/pkg/logger"
 )
 

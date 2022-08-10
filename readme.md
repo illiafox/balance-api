@@ -1,6 +1,9 @@
+### The project is under development, all versions until `1.0.0` are considered as not stable.
+
 ![logo](docs/logo.svg)
 
 [![](https://img.shields.io/badge/-Swagger%20Docs-informational?style=flat&logo=swagger&color=blue&labelColor=gray)](https://validator.swagger.io/?url=https://raw.githubusercontent.com/illiafox/balance-api/master/docs/swagger.yaml)
+
 
 # REST API for ready User balance integration
 

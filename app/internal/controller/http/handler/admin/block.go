@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	dto "balance-service/app/internal/controller/http/admin/dto"
+	"balance-service/app/internal/controller/http/handler/admin/dto"
 	"balance-service/app/internal/controller/http/httputils"
 	"balance-service/app/internal/controller/http/middleware"
 	"balance-service/app/pkg/errors"

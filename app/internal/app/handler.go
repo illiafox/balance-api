@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"balance-service/app/internal/composites"
-	api "balance-service/app/internal/controller/http"
+	api "balance-service/app/internal/controller/http/handler"
 	"balance-service/app/pkg/logger"
 	_ "balance-service/docs"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
